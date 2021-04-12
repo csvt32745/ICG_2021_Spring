@@ -12,6 +12,10 @@ module.exports = {
                     'babel-loader',
                     'awesome-typescript-loader'
                 ]
+            },
+            {
+                test: /\.(glsl|vert|frag)$/,
+                loader: 'ts-shader-loader'
             }
         ]
     }

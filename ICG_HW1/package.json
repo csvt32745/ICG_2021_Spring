@@ -3,13 +3,15 @@
   "version": "1.0.0",
   "main": "main.js",
   "scripts": {
-    "serve": "webpack serve"
+    "dev": "webpack serve --open --config webpack.config.dev.js",
+    "build": "webpack --config webpack.config.prod.js"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@babel/core": "^7.13.10",
     "@babel/preset-env": "^7.13.12",
+    "@types/node": "^14.14.37",
     "awesome-typescript-loader": "^5.2.1",
     "babel-loader": "^8.2.2",
     "html-webpack-plugin": "^5.3.1",
@@ -18,5 +20,11 @@
     "webpack-cli": "^4.5.0",
     "webpack-dev-server": "^3.11.2"
   },
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "gl-matrix": "^3.3.0",
+    "glslify": "^7.1.1",
+    "raw-loader": "^4.0.2",
+    "ts-shader-loader": "^1.0.6"
+  }
 }

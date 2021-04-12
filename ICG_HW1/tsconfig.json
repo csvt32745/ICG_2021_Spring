@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "outDir": ".",
+        "allowJs": true,
+        "target": "es6",
+        "allowSyntheticDefaultImports": true,
+        // "module": "commonjs",
+        "moduleResolution": "node",
+    },
+    "include": [
+        "./js/*",
+        "./ts/*",
+    ],
+}
