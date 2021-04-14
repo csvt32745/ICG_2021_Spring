@@ -23,11 +23,12 @@ void main(void) {
     float dif = dot(normalize(normal), dir);
     if(dif > .6) dif = 0.8;
     else if(dif > .25) dif = .3;
+    // else dif = .0;
     // dif = step(0.25, dif)*0.5;
     // if(dif < 1e-9) dif = step(0.6, dif)*0.8;
     // dif = (dif<.0)? .0 : (dif>1.)? 1. : dif;
 
-    gl_FragColor = vec4(.5, .1, .1, 1);
+    gl_FragColor = vec4(.5, .0, .0, 1);
     // gl_FragColor.rgb *= 0.4;
     gl_FragColor.rgb += lightCor * dif * lightIntensity;
     vec3 halfDir = normalize(viewDir + dir);

@@ -141,7 +141,7 @@ function animate() {
     var timeNow = new Date().getTime();
     if (lastTime != 0) {
         var elapsed = timeNow - lastTime;
-        teapotAngle += 0.1 * elapsed;
+        teapotAngle += 0.05 * elapsed;
     }
     
     lastTime = timeNow;
