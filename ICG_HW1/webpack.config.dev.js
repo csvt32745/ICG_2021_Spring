@@ -12,7 +12,6 @@ module.exports = {
                     'babel-loader',
                     'awesome-typescript-loader'
                 ],
-                
             },
             {
                 test: /\.(glsl|vert|frag)$/,
@@ -22,7 +21,6 @@ module.exports = {
     },
     resolve: {
         extensions: ['.js', '.jsx', '.ts', '.tsx'],
-        // symlinks: false
     },
     optimization: {
         minimize: false

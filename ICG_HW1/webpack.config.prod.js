@@ -15,8 +15,11 @@ module.exports = {
             },
             {
                 test: /\.(glsl|vert|frag)$/,
-                loader: 'ts-shader-loader'
+                loader: 'raw-loader'
             }
         ]
-    }
+    },
+    resolve: {
+        extensions: ['.js', '.jsx', '.ts', '.tsx'],
+    },
 }

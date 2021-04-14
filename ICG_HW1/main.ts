@@ -42,6 +42,7 @@ class Camera {
         this.viewportHeight = viewport.height;
     }
 }
+
 var camera: Camera;
 
 function initGL(canvas: HTMLCanvasElement) {
@@ -68,7 +69,6 @@ function getShader(gl, name: string) {
     gl.shaderSource(frag_shader, shader_src);
     gl.compileShader(frag_shader);
 
-
     if (!gl.getShaderParameter(vert_shader, gl.COMPILE_STATUS)) {
         alert(gl.getShaderInfoLog(vert_shader));
         return null;
@@ -76,7 +76,7 @@ function getShader(gl, name: string) {
         alert(gl.getShaderInfoLog(frag_shader));
         return null;
     }
-
+    
     shaderProgram = gl.createProgram();
     gl.attachShader(shaderProgram, vert_shader);
     gl.attachShader(shaderProgram, frag_shader);
@@ -88,7 +88,6 @@ function getShader(gl, name: string) {
 }
 
 function initShaders() {
-    
     var shaderProgram = getShader(gl, './v');
     gl.useProgram(shaderProgram);
 
@@ -114,53 +113,10 @@ function degToRad(degrees) {
     return degrees * Math.PI / 180;
 }
 
-function handleLoadedTeapot(modelData) {
-    
-    teapotVertexPositionBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, teapotVertexPositionBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(modelData.vertexPositions), gl.STATIC_DRAW);
-    teapotVertexPositionBuffer.itemSize = 3;
-    teapotVertexPositionBuffer.numItems = modelData.vertexPositions.length / 3;
-
-    teapotVertexNormalBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, teapotVertexNormalBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(modelData.vertexNormals), gl.STATIC_DRAW);
-    teapotVertexNormalBuffer.itemSize = 3;
-    teapotVertexNormalBuffer.numItems = modelData.vertexNormals.length / 3;
-
-    teapotVertexFrontColorBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, teapotVertexFrontColorBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(modelData.vertexFrontcolors), gl.STATIC_DRAW);
-    teapotVertexFrontColorBuffer.itemSize = 3;
-    teapotVertexFrontColorBuffer.numItems = modelData.vertexFrontcolors.length / 3;
-}
-
-function loadModel(name: string) {
-    var request = new XMLHttpRequest();
-    request.open("GET", `./model/${name}.json`);
-    request.onreadystatechange = function () {
-        if (request.readyState == 4) {
-            handleLoadedTeapot(JSON.parse(request.responseText));
-        }
-    }
-    request.send();
-}
-
-/*
-    TODO HERE:
-    add two or more objects showing on the canvas
-    (it needs at least three objects showing at the same time)
-*/
 function drawScene() {
     gl.viewport(0, 0, camera.viewportWidth, camera.viewportHeight);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    // if (teapotVertexPositionBuffer   == null || 
-    //     teapotVertexNormalBuffer     == null || 
-    //     teapotVertexFrontColorBuffer == null) {
-        
-    //     return;
-    // }
     if(!m.isLoaded) return;
 
     // Setup Projection Matrix
@@ -171,7 +127,6 @@ function drawScene() {
     mat4.translate(mvMatrix, mvMatrix, [0, 0, -50]);
     mat4.rotate(mvMatrix, mvMatrix, degToRad(teapotAngle), [0, 1, 0]);
 
-    //invT_mvMatrix = Object.assign({}, mvMatrix)
     mat4.invert(invT_mvMatrix, mvMatrix);
     mat4.transpose(invT_mvMatrix, invT_mvMatrix);
 
@@ -204,8 +159,8 @@ function webGLStart() {
     var canvas = <HTMLCanvasElement> document.createElement("canvas")
     canvas.id = "ICG-canvas"
     canvas.style.backgroundColor = "#0078D4"
-    canvas.width  = 640;
-    canvas.height = 360;
+    canvas.width  = 1280;
+    canvas.height = 720;
     // canvas.style.position = "fixed"
     // canvas.style.bottom = "10px"
     // canvas.style.right = "20px"

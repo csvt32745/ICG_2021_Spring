@@ -1,7 +1,7 @@
 {
   "name": "icg_hw1",
   "version": "1.0.0",
-  "main": "main.js",
+  "main": "bundle.js",
   "scripts": {
     "dev": "webpack serve --open --config webpack.config.dev.js",
     "build": "webpack --config webpack.config.prod.js"
