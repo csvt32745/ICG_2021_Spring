@@ -124,7 +124,7 @@ function drawScene() {
 
     // Setup Model-View Matrix
     mat4.identity(mvMatrix);
-    mat4.translate(mvMatrix, mvMatrix, [0, 0, -50]);
+    mat4.translate(mvMatrix, mvMatrix, [0, 0, -35]);
     mat4.rotate(mvMatrix, mvMatrix, degToRad(teapotAngle), [0, 1, 0]);
 
     mat4.invert(invT_mvMatrix, mvMatrix);
