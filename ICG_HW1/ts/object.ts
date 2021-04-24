@@ -1,5 +1,7 @@
 // / <reference path="../main.ts" />
-import { mat4, vec3, quat } from "../js/glMatrix";
+// import { mat4, vec3, quat } from "../js/glMatrix";
+import { mat4, vec3, quat } from "gl-matrix";
+import { BasicShader } from "../ts/shaderProgram";
 // var gl: WebGLRenderingContext = global.gl;
 declare var gl: WebGLRenderingContext;
 
@@ -25,20 +27,22 @@ interface VertexAttributes {
 }
 
 class ModelObject {
-    position: typeof vec3 = vec3.create();
-    rotation: typeof quat = quat.create();
+    position: vec3 = vec3.create();
+    rotation: quat = quat.create();
     
     isLoaded: boolean = false;
 
     vertexAttributes: VertexAttributes;
     vertexBuffers: VertexAttributeBuffers;
-    shaderProgram: WebGLProgram;
+    shaderProgram: BasicShader;
     
     constructor(
-        position: typeof vec3,
-        model_name?: string
+        position: vec3,
+        shader: BasicShader,
+        model_name?: string,
     ) {
         this.position = position;
+        this.shaderProgram = shader;
         if(model_name !== undefined)
             this.loadModel(model_name);
     }
@@ -75,35 +79,35 @@ class ModelObject {
         this.isLoaded = true;
     }
 
-    draw(shaderProgram: any): void {
+    draw(): void {
             // Setup teapot position data
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffers.vertexPositions);
-    gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, 
-                            this.vertexBuffers.vertexPositions.itemSize, 
-                            gl.FLOAT, 
-                            false, 
-                            0, 
-                            0);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffers.vertexPositions);
+        gl.vertexAttribPointer(this.shaderProgram.vertexPositionAttribute, 
+                                this.vertexBuffers.vertexPositions.itemSize, 
+                                gl.FLOAT, 
+                                false, 
+                                0, 
+                                0);
 
-    // Setup teapot front color data
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffers.vertexFrontcolors);
-    gl.vertexAttribPointer(shaderProgram.vertexFrontColorAttribute, 
-                            this.vertexBuffers.vertexFrontcolors.itemSize, 
-                            gl.FLOAT, 
-                            false, 
-                            0, 
-                            0);
+        // Setup teapot front color data
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffers.vertexFrontcolors);
+        gl.vertexAttribPointer(this.shaderProgram.vertexFrontColorAttribute, 
+                                this.vertexBuffers.vertexFrontcolors.itemSize, 
+                                gl.FLOAT, 
+                                false, 
+                                0, 
+                                0);
 
-    // Setup teapot normal data
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffers.vertexNormals);
-    gl.vertexAttribPointer(shaderProgram.vertexNormalAttribute, 
-                            this.vertexBuffers.vertexNormals.itemSize, 
-                            gl.FLOAT, 
-                            false, 
-                            0, 
-                            0);
+        // Setup teapot normal data
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffers.vertexNormals);
+        gl.vertexAttribPointer(this.shaderProgram.vertexNormalAttribute, 
+                                this.vertexBuffers.vertexNormals.itemSize, 
+                                gl.FLOAT, 
+                                false, 
+                                0, 
+                                0);
 
-    gl.drawArrays(gl.TRIANGLES, 0, this.vertexBuffers.vertexPositions.numItems);
+        gl.drawArrays(gl.TRIANGLES, 0, this.vertexBuffers.vertexPositions.numItems);
     }
 
 }

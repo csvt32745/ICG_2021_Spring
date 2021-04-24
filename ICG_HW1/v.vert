@@ -15,7 +15,5 @@ void main(void) {
     pos = (uMVMatrix * vec4(aVertexPosition, 1.0)).xyz;
     gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
     
-    //normal = (uMVMatrix * vec4(aNormal, 0.0)).xyz;
     normal = (uinvTMVMatrix * vec4(aNormal, 0.0)).xyz;
-    //normal = aNormal;
 }
