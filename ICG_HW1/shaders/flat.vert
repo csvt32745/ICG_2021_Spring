@@ -12,6 +12,6 @@ void shading() {
 }
 
 void main(void) {
-    pos = (uMVMatrix * vec4(aVertexPosition, 1.0)).xyz;
+    pos = (uMVMatrix * uModelMatrix * vec4(aVertexPosition, 1.0)).xyz;
     gl_Position = uPMatrix * uMVMatrix * uModelMatrix * vec4(aVertexPosition, 1.0);
 }
