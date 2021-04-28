@@ -1,5 +1,5 @@
 #extension GL_OES_standard_derivatives : enable
-precision mediump float;
+precision highp float;
 
 // varying vec4 fragcolor;
 varying vec3 pos;

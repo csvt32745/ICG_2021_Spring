@@ -12,12 +12,13 @@ class LightUniforms {
     gloss: WebGLUniformLocation;
     
     constructor (idx: number, shaderProgram: WebGLProgram) {
+        
         this.enabled =  gl.getUniformLocation(shaderProgram, `lights[${idx}].enabled`);
-       this.position =  gl.getUniformLocation(shaderProgram, `lights[${idx}].position`);
-       this.la =  gl.getUniformLocation(shaderProgram, `lights[${idx}].la`);
-       this.ld =  gl.getUniformLocation(shaderProgram, `lights[${idx}].ld`);
-       this.ls =  gl.getUniformLocation(shaderProgram, `lights[${idx}].ls`);
-       this.gloss =  gl.getUniformLocation(shaderProgram, `lights[${idx}].gloss`);
+        this.position =  gl.getUniformLocation(shaderProgram, `lights[${idx}].position`);
+        this.la =  gl.getUniformLocation(shaderProgram, `lights[${idx}].la`);
+        this.ld =  gl.getUniformLocation(shaderProgram, `lights[${idx}].ld`);
+        this.ls =  gl.getUniformLocation(shaderProgram, `lights[${idx}].ls`);
+        this.gloss =  gl.getUniformLocation(shaderProgram, `lights[${idx}].gloss`);
     }
 }
 
