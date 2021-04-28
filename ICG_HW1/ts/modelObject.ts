@@ -1,5 +1,7 @@
 import { mat4, vec3, quat } from "gl-matrix";
-import { BasicShader } from "../ts/shaderProgram";
+import { Mode } from "node:fs";
+import { BasicShader } from "./shaderProgram";
+import { Transform } from "./transform"
 declare var gl: WebGLRenderingContext;
 
 class CustomWebGLBuffer extends WebGLBuffer {
@@ -23,7 +25,7 @@ interface VertexAttributes {
     vertexTextureCoords?: Float32Array,
 }
 
-class ModelObject {
+class ModelObject extends Transform {
     position: vec3 = vec3.zero(vec3.create());
     rotation: quat = quat.create();
     scale: vec3 = vec3.fromValues(1, 1, 1);
@@ -38,6 +40,7 @@ class ModelObject {
         shader: BasicShader,
         model_name?: string,
     ) {
+        super()
         this.shaderProgram = shader;
         if(model_name !== undefined)
             this.loadModel(model_name);
@@ -120,18 +123,17 @@ class ModelObject {
         gl.uniformMatrix4fv(this.shaderProgram.invT_modelMatrixUniform, false, mat);
     }
 
-    setScale(s: number): ModelObject { vec3.scale(this.scale, this.scale, s); return this; }
-    setScaleXYZ(x: number, y: number, z: number): ModelObject { this.scale = vec3.fromValues(x, y, z); return this; }
+    setScale(s: number):ModelObject { super.setScale(s); return this; }
+    setScaleXYZ(x: number, y: number, z: number):ModelObject { super.setScaleXYZ(x, y, z); return this; }
 
-    setPos(x: number, y: number, z: number): ModelObject { this.position = vec3.fromValues(x, y, z); return this; }
-    translate(x: number, y: number, z: number): ModelObject { vec3.add(this.position, this.position, vec3.fromValues(x, y, z)); return this; }
+    setPos(x: number, y: number, z: number): ModelObject { super.setPos(x, y, z); return this; }
+    translate(x: number, y: number, z: number): ModelObject { super.translate(x, y, z); return this; }
 
-    setRot(x: number, y: number, z: number): ModelObject { this.rotation = quat.fromEuler(quat.create(), x, y, z); return this; }
-    rotateX(r: number): ModelObject { quat.rotateX(this.rotation, this.rotation, r); return this; }
-    rotateY(r: number): ModelObject { quat.rotateY(this.rotation, this.rotation, r); return this; }
-    rotateZ(r: number): ModelObject { quat.rotateZ(this.rotation, this.rotation, r); return this; }
-    rotateAxis(r: number, axis: vec3) { quat.multiply(this.rotation, this.rotation, quat.setAxisAngle(quat.create(), axis, r)); return this; }
-    
+    setRot(x: number, y: number, z: number): ModelObject { super.setRot(x, y, z); return this; }
+    rotateX(r: number): ModelObject { super.rotateX(r); return this; }
+    rotateY(r: number): ModelObject { super.rotateY(r); return this; }
+    rotateZ(r: number): ModelObject { super.rotateZ(r); return this; }
+    rotateAxis(r: number, axis: vec3): ModelObject { super.rotateAxis(r, axis); return this; }
 }
 
 export {

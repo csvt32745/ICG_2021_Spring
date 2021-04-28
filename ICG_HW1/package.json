@@ -24,6 +24,7 @@
   "dependencies": {
     "gl-matrix": "^3.3.0",
     "glslify": "^7.1.1",
+    "maths.ts": "0.0.8",
     "raw-loader": "^4.0.2",
     "ts-shader-loader": "^1.0.6"
   }

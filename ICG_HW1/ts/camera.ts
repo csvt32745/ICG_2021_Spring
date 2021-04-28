@@ -1,9 +1,7 @@
 import { mat4, vec3, quat } from "gl-matrix";
+import { Transform } from "./transform"
 
-class Camera {
-    position: vec3 = vec3.create();
-    rotation: quat = quat.create();
-
+class Camera extends Transform {
     viewportWidth: number; 
     viewportHeight: number;
     FOV: number = 45;
@@ -13,20 +11,22 @@ class Camera {
     invT_mvMatrix: mat4 = mat4.create();
 
     constructor(viewport: {width: number, height: number}){
+        super();
         this.viewportWidth = viewport.width;
         this.viewportHeight = viewport.height;
     }
 
-    setMVP(): void {
+    setMVP() {
         // Setup Projection Matrix
-        mat4.perspective(this.pMatrix, this.FOV, this.viewportWidth / this.viewportHeight, 0.1, 100.0);
+        mat4.perspective(this.pMatrix, this.FOV, this.viewportWidth / this.viewportHeight, 0.1, 300.0);
 
         // Setup Model-View Matrix
-        mat4.fromQuat(this.mvMatrix, this.rotation);
-        mat4.translate(this.mvMatrix, this.mvMatrix, this.position);
+        mat4.fromRotationTranslation(this.mvMatrix, this.rotation, this.position);
+        mat4.invert(this.mvMatrix, this.mvMatrix);
         
         mat4.invert(this.invT_mvMatrix, this.mvMatrix);
         mat4.transpose(this.invT_mvMatrix, this.invT_mvMatrix);
+        return this.getMVP()
     }
 
     getMVP() {

@@ -1,11 +1,14 @@
 /* https://github.com/toji/gl-matrix */
 import { mat4, vec3, quat } from "gl-matrix";
 import "./js/webgl-utils.js";
+import "maths.ts";
 
 /* Custom Module */
-import { ModelObject } from "./ts/object";
+import { Transform } from "./ts/transform"
+import { ModelObject } from "./ts/modelObject";
 import { BasicShader } from "./ts/shaderProgram";
 import { Camera } from "./ts/camera";
+import { PhongLight } from "./ts/light";
 
 declare global {
     interface Window {
@@ -25,8 +28,9 @@ declare var elapsed_time: number;
 var teapotAngle = 20;
 var lastTime    = 0;
 
-var scene_objects: { [name: string]: ModelObject } = {}
-var shader_programs: { [name: string]: BasicShader } = {}
+var scene_objects: { [name: string]: ModelObject } = {};
+var shader_programs: { [name: string]: BasicShader } = {};
+var lights: PhongLight[] = [];
 
 var camera: Camera;
 
@@ -36,18 +40,27 @@ function webGLStart() {
     canvas.style.backgroundColor = "#0078D4"
     canvas.width  = 1280;
     canvas.height = 720;
-    camera = new Camera({width: canvas.width, height: canvas.height});
-    camera.position = vec3.fromValues(0 , 0, -35);
-    global.elapsed_time = .1;
-
     initGL(canvas);
-    shader_programs["phong"] = new BasicShader('v');
+
+    camera = new Camera({width: canvas.width, height: canvas.height});
+    camera.setPos(0 , 0, 30);
+
+    global.elapsed_time = .1;
+    var l = new PhongLight().setDiffuse(.9, .2, .2).setGloss(64);
+    l.setPos(-15, 0, 0);
+    lights.push(l);
+    l = new PhongLight().setAmbient(0, 0, 0).setDiffuse(.3, .3, .3).setGloss(1).setSpecular(.1, .1, .1);
+    l.setPos(0, 50, 50);
+    lights.push(l);
+
+    shader_programs["phong"] = new BasicShader('phong');
     shader_programs["goraud"] = new BasicShader('goraud');
     shader_programs["flat"] = new BasicShader('flat');
-
-    scene_objects["easter"] = new ModelObject(shader_programs["phong"], 'Easter').setScale(10).setRot(-90, 0, 0).setPos(-15, 0, 0);
-    scene_objects["teapot"] = new ModelObject(shader_programs["flat"], 'Teapot').setScale(0.5);
-    scene_objects["csie"] = new ModelObject(shader_programs["goraud"], 'Kangaroo').setScale(30).setRot(-45, 0, 0).setPos(20, 0, 0);
+    shader_programs["cel"] = new BasicShader('cel');
+    scene_objects["easter"] = new ModelObject(shader_programs["cel"], 'Easter').setScale(10).setRot(-90, 30, 0).setPos(-15, 0, 0);
+    scene_objects["easter2"] = new ModelObject(shader_programs["phong"], 'Easter').setScale(10).setRot(-90, -30, 0).setPos(15, 0, 0);
+    scene_objects["teapot"] = new ModelObject(shader_programs["cel"], 'Teapot').setScale(0.5);
+    // scene_objects["kangaroo"] = new ModelObject(shader_programs["phong"], 'Kangaroo').setScale(20).setRot(-90, 0, 0).setPos(20, 10, 0);
 
     gl.clearColor(0.5, 0.5, 0.5, 1.0);
     gl.enable(gl.DEPTH_TEST);
@@ -76,8 +89,13 @@ function degToRad(degrees) {
 }
 
 function update() {
-    teapotAngle += 0.05 * elapsed_time;
-    scene_objects['teapot'].setRot(0, teapotAngle, 0); 
+    teapotAngle += degToRad(0.02) * elapsed_time;
+    scene_objects['teapot'].rotateY(degToRad(0.05) * elapsed_time); 
+    // scene_objects['easter'].rotateZ(degToRad(0.05) * elapsed_time); 
+    // scene_objects['kangaroo'].rotateZ(degToRad(0.01) * elapsed_time); 
+    lights[0].setPos(500*Math.cos(teapotAngle), lights[0].position[1], 500*Math.sin(teapotAngle))
+    // scene_objects['teapot'].translate(0, 0, -.01 * elapsed_time);
+    // camera.rotateY(degToRad(0.05) * elapsed_time);
 }
 
 function draw() {
@@ -87,13 +105,16 @@ function draw() {
     camera.setMVP();
     let world_mat = camera.getMVP();
     Object.entries(shader_programs).forEach(
-        ([, prog]) => prog.setWorldMatrixUniforms(world_mat)
+        ([, prog]) => {
+            prog.setWorldMatrixUniforms(world_mat);
+            prog.setLightUniforms(lights);
+            prog.setCamPosUniform(camera.position);
+        }
     );
     Object.entries(scene_objects).forEach(
         ([, obj]) => obj.draw()
     );
 }
-
 
 /* WebGL Util */
 
@@ -112,5 +133,3 @@ function tick() {
     draw();
     updateTime();
 }
-
-
