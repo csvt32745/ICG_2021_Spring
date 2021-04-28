@@ -52,7 +52,7 @@ class ModelObject extends Transform {
         request.onreadystatechange = () => {
             if (request.readyState == 4) {
                 this.vertexAttributes = JSON.parse(request.responseText) as VertexAttributes;
-                console.log(this.vertexAttributes);
+                // console.log(this.vertexAttributes);
                 this.handleModelData();
             }
         }
@@ -70,7 +70,7 @@ class ModelObject extends Transform {
                 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(<Float32Array> this.vertexAttributes[key]), gl.STATIC_DRAW);
                 buf.itemSize = 3;
                 buf.numItems = this.vertexAttributes[key].length / 3;
-                console.log(buf);
+                // console.log(buf);
                 this.vertexBuffers[key] = buf;
             }
         }
