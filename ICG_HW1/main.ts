@@ -1,12 +1,11 @@
 /* https://github.com/toji/gl-matrix */
-/*  */
-// import { mat4 } from "./js/glMatrix";
-import { mat4 } from "gl-matrix";
-import { vec3 } from "./js/glMatrix.js";
+import { mat4, vec3, quat } from "gl-matrix";
 import "./js/webgl-utils.js";
 
 /* Custom Module */
 import { ModelObject } from "./ts/object";
+import { BasicShader } from "./ts/shaderProgram";
+import { Camera } from "./ts/camera";
 
 declare global {
     interface Window {
@@ -14,169 +13,104 @@ declare global {
         requestAnimFrame: Function;
     }
     var gl: WebGLRenderingContext;
+    var elapsed_time: number;
 }
 
 window.onload = () => webGLStart();
 
 // common variables
 declare var gl: WebGLRenderingContext;
-var shaderProgram;
-var mvMatrix: mat4 = mat4.create();
-var pMatrix: mat4 = mat4.create();
-var invT_mvMatrix: mat4 = mat4.create();
-var teapotVertexPositionBuffer;
-var teapotVertexNormalBuffer;
-var teapotVertexFrontColorBuffer;
+declare var elapsed_time: number;
 
 var teapotAngle = 20;
 var lastTime    = 0;
 
-var m: ModelObject;
-
-class Camera {
-    viewportWidth: number; 
-    viewportHeight: number;
-    
-    constructor(viewport: {width: number, height: number}){
-        this.viewportWidth = viewport.width;
-        this.viewportHeight = viewport.height;
-    }
-}
+var scene_objects: { [name: string]: ModelObject } = {}
+var shader_programs: { [name: string]: BasicShader } = {}
 
 var camera: Camera;
+
+function webGLStart() {
+    var canvas = <HTMLCanvasElement> document.createElement("canvas")
+    canvas.id = "ICG-canvas"
+    canvas.style.backgroundColor = "#0078D4"
+    canvas.width  = 1280;
+    canvas.height = 720;
+    camera = new Camera({width: canvas.width, height: canvas.height});
+    camera.position = vec3.fromValues(0 , 0, -35);
+    global.elapsed_time = .1;
+
+    initGL(canvas);
+    shader_programs["phong"] = new BasicShader('v');
+    shader_programs["goraud"] = new BasicShader('goraud');
+    shader_programs["flat"] = new BasicShader('flat');
+
+    scene_objects["easter"] = new ModelObject(shader_programs["phong"], 'Easter').setScale(10).setRot(-90, 0, 0).setPos(-15, 0, 0);
+    scene_objects["teapot"] = new ModelObject(shader_programs["flat"], 'Teapot').setScale(0.5);
+    scene_objects["csie"] = new ModelObject(shader_programs["goraud"], 'Kangaroo').setScale(30).setRot(-45, 0, 0).setPos(20, 0, 0);
+
+    gl.clearColor(0.5, 0.5, 0.5, 1.0);
+    gl.enable(gl.DEPTH_TEST);
+    
+    document.body.appendChild(canvas)
+    tick();
+}
+
 
 function initGL(canvas: HTMLCanvasElement) {
     try {
         global.gl = <WebGLRenderingContext> canvas.getContext("webgl") || <WebGLRenderingContext> canvas.getContext("experimental-webgl");
-        camera = new Camera({width: canvas.width, height: canvas.height});
+        if(!gl.getExtension('OES_standard_derivatives')){
+            throw('OES std extension not supported!')
+        }
     } 
     catch (e) {
     }
-
     if (!gl) {
         alert("Could not initialise WebGL, sorry :-(");
     }
-}
-
-function getShader(gl, name: string) {
-    var vert_shader = gl.createShader(gl.VERTEX_SHADER);
-    var shader_src = require(`${name}.vert`).default;
-    gl.shaderSource(vert_shader, shader_src);
-    gl.compileShader(vert_shader);
-
-    var frag_shader = gl.createShader(gl.FRAGMENT_SHADER);
-    shader_src = require(`${name}.frag`).default;
-    gl.shaderSource(frag_shader, shader_src);
-    gl.compileShader(frag_shader);
-
-    if (!gl.getShaderParameter(vert_shader, gl.COMPILE_STATUS)) {
-        alert(gl.getShaderInfoLog(vert_shader));
-        return null;
-    } else if (!gl.getShaderParameter(frag_shader, gl.COMPILE_STATUS)) {
-        alert(gl.getShaderInfoLog(frag_shader));
-        return null;
-    }
-    
-    shaderProgram = gl.createProgram();
-    gl.attachShader(shaderProgram, vert_shader);
-    gl.attachShader(shaderProgram, frag_shader);
-    gl.linkProgram(shaderProgram);
-    if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-        alert("Could not initialise shaders");
-    }
-    return shaderProgram;
-}
-
-function initShaders() {
-    var shaderProgram = getShader(gl, './v');
-    gl.useProgram(shaderProgram);
-
-    shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
-    gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
-    shaderProgram.vertexFrontColorAttribute = gl.getAttribLocation(shaderProgram, "aFrontColor");
-    gl.enableVertexAttribArray(shaderProgram.vertexFrontColorAttribute);
-    shaderProgram.vertexNormalAttribute = gl.getAttribLocation(shaderProgram, "aNormal");
-    gl.enableVertexAttribArray(shaderProgram.vertexNormalAttribute);
-
-    shaderProgram.pMatrixUniform  = gl.getUniformLocation(shaderProgram, "uPMatrix");
-    shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
-    shaderProgram.invT_mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uinvTMVMatrix");
-}
-
-function setMatrixUniforms() {
-    gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, pMatrix);
-    gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
-    gl.uniformMatrix4fv(shaderProgram.invT_mvMatrixUniform, false, invT_mvMatrix);
 }
 
 function degToRad(degrees) {
     return degrees * Math.PI / 180;
 }
 
-function drawScene() {
+function update() {
+    teapotAngle += 0.05 * elapsed_time;
+    scene_objects['teapot'].setRot(0, teapotAngle, 0); 
+}
+
+function draw() {
     gl.viewport(0, 0, camera.viewportWidth, camera.viewportHeight);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    if(!m.isLoaded) return;
-
-    // Setup Projection Matrix
-    mat4.perspective(pMatrix, 45, camera.viewportWidth / camera.viewportHeight, 0.1, 100.0);
-
-    // Setup Model-View Matrix
-    mat4.identity(mvMatrix);
-    mat4.translate(mvMatrix, mvMatrix, [0, 0, -35]);
-    mat4.rotate(mvMatrix, mvMatrix, degToRad(teapotAngle), [0, 1, 0]);
-
-    mat4.invert(invT_mvMatrix, mvMatrix);
-    mat4.transpose(invT_mvMatrix, invT_mvMatrix);
-
-    setMatrixUniforms();
-    m.draw(shaderProgram);
+    camera.setMVP();
+    let world_mat = camera.getMVP();
+    Object.entries(shader_programs).forEach(
+        ([, prog]) => prog.setWorldMatrixUniforms(world_mat)
+    );
+    Object.entries(scene_objects).forEach(
+        ([, obj]) => obj.draw()
+    );
 }
 
 
 /* WebGL Util */
 
-function animate() {
+function updateTime() {
     var timeNow = new Date().getTime();
     if (lastTime != 0) {
-        var elapsed = timeNow - lastTime;
-        teapotAngle += 0.05 * elapsed;
+        elapsed_time = timeNow - lastTime;
     }
-    
     lastTime = timeNow;
 }
 
 function tick() {
     // window.requestAnimationFrame(tick);
     window.requestAnimFrame(tick);
-    drawScene();
-    animate();
+    update();
+    draw();
+    updateTime();
 }
 
-function webGLStart() {
-    // var canvas = <HTMLCanvasElement> document.getElementById("ICG-canvas");
-    var canvas = <HTMLCanvasElement> document.createElement("canvas")
-    canvas.id = "ICG-canvas"
-    canvas.style.backgroundColor = "#0078D4"
-    canvas.width  = 1280;
-    canvas.height = 720;
-    // canvas.style.position = "fixed"
-    // canvas.style.bottom = "10px"
-    // canvas.style.right = "20px"
-    // canvas.style.width = "1920"
-    // canvas.style.height = "1080"
-
-    initGL(canvas);
-    initShaders();
-    // loadModel('Teapot');
-    m = new ModelObject(vec3.fromValues(0, 0, 0), 'Teapot');
-
-
-    gl.clearColor(0.5, 0.5, 0.5, 1.0);
-    gl.enable(gl.DEPTH_TEST);
-
-    document.body.appendChild(canvas)
-    tick();
-}
 

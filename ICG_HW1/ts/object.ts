@@ -1,8 +1,5 @@
-// / <reference path="../main.ts" />
-// import { mat4, vec3, quat } from "../js/glMatrix";
 import { mat4, vec3, quat } from "gl-matrix";
 import { BasicShader } from "../ts/shaderProgram";
-// var gl: WebGLRenderingContext = global.gl;
 declare var gl: WebGLRenderingContext;
 
 class CustomWebGLBuffer extends WebGLBuffer {
@@ -27,8 +24,9 @@ interface VertexAttributes {
 }
 
 class ModelObject {
-    position: vec3 = vec3.create();
+    position: vec3 = vec3.zero(vec3.create());
     rotation: quat = quat.create();
+    scale: vec3 = vec3.fromValues(1, 1, 1);
     
     isLoaded: boolean = false;
 
@@ -37,11 +35,9 @@ class ModelObject {
     shaderProgram: BasicShader;
     
     constructor(
-        position: vec3,
         shader: BasicShader,
         model_name?: string,
     ) {
-        this.position = position;
         this.shaderProgram = shader;
         if(model_name !== undefined)
             this.loadModel(model_name);
@@ -61,7 +57,6 @@ class ModelObject {
     }
     
     handleModelData(): void {
-
         // console.log(this.vertexAttributes.vertexPositions);
         this.vertexBuffers = {}
         for(let key in this.vertexAttributes){
@@ -80,7 +75,12 @@ class ModelObject {
     }
 
     draw(): void {
-            // Setup teapot position data
+        if(!this.isLoaded)
+            return;
+        gl.useProgram(this.shaderProgram.shaderProgram);
+        this.setUniform();
+        
+        // Setup teapot position data
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffers.vertexPositions);
         gl.vertexAttribPointer(this.shaderProgram.vertexPositionAttribute, 
                                 this.vertexBuffers.vertexPositions.itemSize, 
@@ -110,6 +110,28 @@ class ModelObject {
         gl.drawArrays(gl.TRIANGLES, 0, this.vertexBuffers.vertexPositions.numItems);
     }
 
+    setUniform(): void {
+        let mat = mat4.create();
+        mat4.mul(mat, mat4.fromQuat(mat4.create(), this.rotation), mat4.fromScaling(mat4.create(), this.scale));
+        mat4.mul(mat, mat4.fromTranslation(mat4.create(), this.position), mat);
+        gl.uniformMatrix4fv(this.shaderProgram.modelMatrixUniform, false, mat);
+
+        mat4.transpose(mat, mat4.invert(mat, mat));
+        gl.uniformMatrix4fv(this.shaderProgram.invT_modelMatrixUniform, false, mat);
+    }
+
+    setScale(s: number): ModelObject { vec3.scale(this.scale, this.scale, s); return this; }
+    setScaleXYZ(x: number, y: number, z: number): ModelObject { this.scale = vec3.fromValues(x, y, z); return this; }
+
+    setPos(x: number, y: number, z: number): ModelObject { this.position = vec3.fromValues(x, y, z); return this; }
+    translate(x: number, y: number, z: number): ModelObject { vec3.add(this.position, this.position, vec3.fromValues(x, y, z)); return this; }
+
+    setRot(x: number, y: number, z: number): ModelObject { this.rotation = quat.fromEuler(quat.create(), x, y, z); return this; }
+    rotateX(r: number): ModelObject { quat.rotateX(this.rotation, this.rotation, r); return this; }
+    rotateY(r: number): ModelObject { quat.rotateY(this.rotation, this.rotation, r); return this; }
+    rotateZ(r: number): ModelObject { quat.rotateZ(this.rotation, this.rotation, r); return this; }
+    rotateAxis(r: number, axis: vec3) { quat.multiply(this.rotation, this.rotation, quat.setAxisAngle(quat.create(), axis, r)); return this; }
+    
 }
 
 export {
