@@ -4,7 +4,6 @@ precision highp float;
 varying vec3 fragcolor;
 varying vec3 vNormal;
 varying vec3 pos;
-varying mat4 invModelMatrix;
 
 struct Light {
     bool enabled;

@@ -52,12 +52,15 @@ function webGLStart() {
     l = new PhongLight().setAmbient(0, 0, 0).setDiffuse(.3, .3, .3).setGloss(1).setSpecular(.1, .1, .1);
     l.setPos(0, 50, 50);
     lights.push(l);
+    l = new PhongLight().setAmbient(0, 0, 0).setDiffuse(.8, .8, .1).setGloss(4).setSpecular(.1, .1, .1);
+    l.setPos(0, 50, -100);
+    lights.push(l);
 
     shader_programs["phong"] = new BasicShader('phong');
     shader_programs["goraud"] = new BasicShader('goraud');
     shader_programs["flat"] = new BasicShader('flat');
     shader_programs["cel"] = new BasicShader('cel');
-    scene_objects["easter"] = new ModelObject(shader_programs["cel"], 'Easter').setScale(10).setRot(-90, 30, 0).setPos(-15, 0, 0);
+    scene_objects["easter"] = new ModelObject(shader_programs["flat"], 'Easter').setScale(10).setRot(-90, 30, 0).setPos(-15, 0, 0);
     scene_objects["easter2"] = new ModelObject(shader_programs["phong"], 'Easter').setScale(10).setRot(-90, -30, 0).setPos(15, 0, 0);
     scene_objects["teapot"] = new ModelObject(shader_programs["cel"], 'Teapot').setScale(0.5);
     // scene_objects["kangaroo"] = new ModelObject(shader_programs["phong"], 'Kangaroo').setScale(20).setRot(-90, 0, 0).setPos(20, 10, 0);

@@ -11,7 +11,6 @@ uniform mat4 uinvTModelMatrix;
 varying vec3 fragcolor;
 varying vec3 vNormal;
 varying vec3 pos;
-varying mat4 invModelMatrix;
 
 mat4 transpose(mat4 inMatrix) { 
     vec4 i0 = inMatrix[0]; 
@@ -33,9 +32,8 @@ void main(void) {
     fragcolor = aFrontColor;
     // pos = aVertexPosition;
     pos = (uModelMatrix * vec4(aVertexPosition, 1)).xyz;
-    invModelMatrix = transpose(uinvTModelMatrix);
     // normal = normalize(aNormal);
     vNormal = ((uinvTModelMatrix * vec4(aNormal, 0.0)).xyz);
 
-    gl_Position = uPMatrix * uMVMatrix * uModelMatrix * vec4(aVertexPosition, 1.0);
+    gl_Position = uPMatrix * uMVMatrix * vec4(pos, 1.0);
 }

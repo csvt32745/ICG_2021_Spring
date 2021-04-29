@@ -5,36 +5,49 @@ attribute vec3 aNormal;
 uniform mat4 uModelMatrix;
 uniform mat4 uMVMatrix;
 uniform mat4 uPMatrix;
-uniform mat4 uinvTMVMatrix;
 uniform mat4 uinvTModelMatrix;
 
-varying vec4 fragcolor;
+struct Light {
+    bool enabled;
+    vec3 position;
+    vec3 la; // Ambient
+    vec3 ld; // Diffuse
+    vec3 ls; // Specular
+    float gloss;
+};
+
+uniform Light lights[4];
+uniform vec3 uCamPos;
+
 vec3 normal;
 vec3 pos;
+vec3 viewDir;
+
+varying vec3 fragcolor;
 
 void shading() {
-    vec3 viewDir = normalize(vec3(0, 0, 50));
-    vec3 lightPos = vec3(50, 50, 20);
-    
-    vec3 dir = normalize(lightPos - pos);
-    vec3 lightCor = vec3(0.5, .5, .5);
-    float lightIntensity = 1.;
-    float dif = dot(normalize(normal), dir);
+    vec3 light_color = vec3(0);
+    vec3 spec_color = vec3(0);
+    fragcolor = vec3(0);
+    for(int i = 0; i < 4; ++i){
+        if(!lights[i].enabled){
+            break;
+        }
+        vec3 lightDir = normalize(lights[i].position - pos);
 
-    fragcolor = vec4(.5, .0, .0, 1);
-    fragcolor.rgb += lightCor * dif * lightIntensity;
-    vec3 halfDir = normalize(viewDir + dir);
-    float _spec = 1.;
-    float _gloss = 10.;
-    float spec = _spec * pow(clamp(dot(normal, halfDir), 0., 1.),  _gloss);
-    spec = step(0.7, spec);
-    fragcolor.rgb += lightCor*spec;
+        float dif = dot(normal, lightDir);
+        light_color += lights[i].la + dif * lights[i].ld;
+        
+        vec3 halfDir = normalize(viewDir + lightDir);
+        float spec = pow(max(dot(normal, halfDir), 0.), lights[i].gloss);
+        spec_color += lights[i].ls * spec;
+    }
+    fragcolor = light_color * aFrontColor + spec_color;
 }
-
 void main(void) {
-    vec4 pos4 = uMVMatrix * uModelMatrix * vec4(aVertexPosition, 1.0);
-    pos = pos4.xyz;
-    normal = normalize((uinvTMVMatrix * uinvTModelMatrix * vec4(aNormal, 0.0)).xyz);
-    gl_Position = uPMatrix * pos4;
+    pos = (uModelMatrix * vec4(aVertexPosition, 1)).xyz;
+    normal = normalize((uinvTModelMatrix * vec4(aNormal, 0.0)).xyz);
+    viewDir = normalize(uCamPos - pos);
     shading();
+    gl_Position = uPMatrix * uMVMatrix * vec4(pos, 1.0);
 }
