@@ -55,6 +55,12 @@ export function getEuler(out, quat) {
   return out;
 }
 
+function degToRad(degrees) {
+  return degrees * Math.PI / 180;
+}
+
+
 export {
-  Transform
+  Transform,
+  degToRad
 }

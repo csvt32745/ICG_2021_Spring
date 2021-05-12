@@ -6,11 +6,11 @@ import App from './App.vue'
 import SceneObjectListComponent from './components/SceneObjectList.vue'
 
 /* Custom Module */
-import { Transform } from './ts/transform'
+import { Transform, degToRad } from './ts/transform'
 import { ModelObject } from './ts/modelObject'
 import { BasicShader } from './ts/shaderProgram'
 import { Camera } from './ts/camera'
-import { PhongLight } from './ts/light'
+import { PhongLight, Shadow } from './ts/light'
 // import { Vue } from 'vue-class-component'
 
 window.onload = () => webGLStart();
@@ -44,6 +44,8 @@ declare var texture_list: string[];
 var teapotAngle = 20;
 var lastTime    = 0;
 var canvas: HTMLCanvasElement = document.createElement("canvas");
+var shadow: Shadow;
+var shadow_shader: BasicShader;
 
 function initGlobalVariables() {
     global.lights = []
@@ -80,20 +82,26 @@ function webGLStart() {
     camera.setPos(0 , 0, 30);
     
     var l = new PhongLight().setDiffuse(.9, .2, .2).setAttenuation(300);
-    l.setPos(-15, 0, 0);
+    l.setPos(-15, 10, 0);
     lights.push(l);
+    
     l = new PhongLight().setAmbient(.1, .1, .1).setDiffuse(.9, .9, .9).setSpecular(.5, .5, .5).setAttenuation(100);
-    l.setPos(0, 50, 0);
+    l.setPos(0, 25, 0);
     lights.push(l);
+
     l = new PhongLight().setAmbient(0, 0, 0).setDiffuse(.5, .5, .5).setSpecular(.0, .0, .0).setAttenuation(500);
     l.setPos(0, 50, 50);
     lights.push(l); 
     
+    shadow = new Shadow(lights[0]);
+    shadow_shader = new BasicShader('shadow');
+
     shader_programs["phong"] = new BasicShader('phong');
     shader_programs["goraud"] = new BasicShader('goraud');
     shader_programs["flat"] = new BasicShader('flat');
     shader_programs["cel"] = new BasicShader('cel');
     shader_programs["custom"] = new BasicShader('custom');
+
     scene_objects["plane"] = new ModelObject(
         shader_programs["custom"], 'plane', 'debug.png')
         .setScale(100).setPos(0, -10, 0).setRot(0, 0, 0).setGloss(16);
@@ -108,10 +116,6 @@ function webGLStart() {
 
     var vm = createApp(SceneObjectListComponent)
     vm.mount('#app')
-    
-    // vm.data.pos = pos: scene_objects["teapot"].position
-    // vm.$data = scene_objects["teapot"].position;
-    
     
     gl.clearColor(0.5, 0.5, 0.5, 1.0);
     gl.enable(gl.DEPTH_TEST);
@@ -130,6 +134,9 @@ function initGL(canvas: HTMLCanvasElement) {
         if(!gl.getExtension('WEBGL_depth_texture')){
             throw('Depth texture extension not supported!')
         }
+        if(!gl.getExtension('EXT_frag_depth')){
+            throw('Depth texture extension not supported!')
+        }
     } 
     catch (e) {
     }
@@ -138,32 +145,58 @@ function initGL(canvas: HTMLCanvasElement) {
     }
 }
 
-function degToRad(degrees) {
-    return degrees * Math.PI / 180;
+function tick() {
+    // window.requestAnimationFrame(tick);
+    window.requestAnimFrame(tick);
+    update();
+    
+    // depth maps
+    // drawShadow(shadow, shadow_shader);
+    shadow.setPosRot();
+    shadow.view.setMVP();
+    let mat = shadow.getMatrix();
+    // let mat = mat4.create();
+    Object.entries(shader_programs).forEach(
+        ([, prog]) => {
+            prog.setDepthMatrixUniforms(shadow.depthTextureSize, mat, shadow.depthTexture);
+        }
+    );
+    // rendering
+    // draw(shadow.view);
+    draw();
+    updateTime();
 }
+
 
 function update() {
     teapotAngle += degToRad(0.03) * elapsed_time;
-    scene_objects['teapot'].rotateY(degToRad(0.05) * elapsed_time); 
+    // scene_objects['teapot'].rotateY(degToRad(0.05) * elapsed_time); 
     // scene_objects['easter'].rotateZ(degToRad(0.05) * elapsed_time); 
     // scene_objects['kangaroo'].rotateZ(degToRad(0.01) * elapsed_time); 
-    lights[0].setPos(50*Math.cos(teapotAngle), lights[0].position[1], 50*Math.sin(teapotAngle))
-    lights[1].setPos(0, lights[1].position[1], 100*Math.cos(teapotAngle))
+    lights[0].setPos(30*Math.cos(teapotAngle), lights[0].position[1], 30*Math.sin(teapotAngle))
+    lights[1].setPos(0, lights[1].position[1], 100*Math.cos(teapotAngle*2))
     // scene_objects['teapot'].translate(0, 0, -.01 * elapsed_time);
     // camera.rotateY(degToRad(0.05) * elapsed_time);
 }
 
-function draw() {
-    gl.viewport(0, 0, camera.viewportWidth, camera.viewportHeight);
+function draw(
+    view: Camera = camera,
+    shaders:{ [name: string]: BasicShader } | BasicShader[] = shader_programs,
+    )
+{
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-    camera.setMVP();
-    let world_mat = camera.getMVP();
-    Object.entries(shader_programs).forEach(
+    gl.disable(gl.CULL_FACE);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    // gl.enable(gl.CULL_FACE);
+    gl.enable(gl.DEPTH_TEST);
+    gl.viewport(0, 0, view.viewportWidth, view.viewportHeight);
+    
+    let world_mat = view.setMVP();
+    Object.entries(shaders).forEach(
         ([, prog]) => {
             prog.setWorldMatrixUniforms(world_mat);
             prog.setLightUniforms(lights);
-            prog.setCamPosUniform(camera.position);
+            prog.setCamPosUniform(view.position);
         }
     );
     Object.entries(scene_objects).forEach(
@@ -171,7 +204,32 @@ function draw() {
     );
 }
 
-/* WebGL Util */
+function drawShadow(
+    shadow: Shadow, shader: BasicShader
+    )
+{
+    shadow.setFrameBuffer();
+    let view = shadow.view;
+    // gl.enable(gl.CULL_FACE);
+    gl.enable(gl.DEPTH_TEST);
+    gl.viewport(0, 0, view.viewportWidth, view.viewportHeight);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    
+    let world_mat = view.setMVP();
+    shader.setWorldMatrixUniforms(world_mat);
+    shader.setLightUniforms(lights);
+    shader.setCamPosUniform(view.position);
+    Object.entries(scene_objects).forEach(
+        ([, obj]) => {
+            // let s = obj.shaderProgram;
+            // obj.shaderProgram = shader;
+            obj.draw()
+            // obj.shaderProgram = s;
+        }
+    );
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+}
+
 
 function updateTime() {
     var timeNow = new Date().getTime();
@@ -179,12 +237,4 @@ function updateTime() {
         elapsed_time = timeNow - lastTime;
     }
     lastTime = timeNow;
-}
-
-function tick() {
-    // window.requestAnimationFrame(tick);
-    window.requestAnimFrame(tick);
-    update();
-    draw();
-    updateTime();
 }

@@ -8,6 +8,10 @@ varying vec2 uv;
 uniform sampler2D tex;
 uniform bool tex_enabled;
 
+uniform sampler2D depth_tex;
+varying vec4 depth_pos;
+
+
 struct Light {
     bool enabled;
     vec3 position;
@@ -22,16 +26,31 @@ uniform float gloss;
 uniform Light lights[4];
 uniform vec3 uCamPos;
 
+
 void main(void) {
+    // depth
+    vec3 relative_depth_pos = depth_pos.xyz / depth_pos.w;
+    relative_depth_pos = relative_depth_pos*0.5 + 0.5;
+    vec4 shadowmap_color = texture2D(depth_tex, relative_depth_pos.xy);
+    float shadow_dist = shadowmap_color.r;
+    // gl_FragColor.rgb = vec3(relative_depth_pos.z);
+    // gl_FragColor.a = 1.;
+    gl_FragColor = shadowmap_color;
+    
+    return;
+    
+    // if(relative_depth_pos.z > shadow_dist + 1e-5){
+    //     gl_FragColor = vec4(0, 0, 0, 1);
+    //     return;
+    // }
+
+    // color
     gl_FragColor = vec4(0, 0, 0, 1);
     vec3 color;
     if(tex_enabled){
-        vec2 uv_ = uv;
-        // uv_ = uv_*0.2;
-        // uv_.y *= -1.;
-        color = texture2D(tex, uv_).rgb;
-        // gl_FragColor = texture2D(tex, uv_);
-        // return;
+        // color = texture2D(tex, uv).rgb;
+        gl_FragColor.rgb = texture2D(depth_tex, uv).rgb;
+        return;
     }
     else{
         color = fragcolor;

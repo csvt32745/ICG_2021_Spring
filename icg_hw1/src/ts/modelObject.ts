@@ -119,14 +119,17 @@ class ModelObject extends Transform {
       this.isLoaded = true
     }
 
-    draw (): void {
+    draw (shaderProgram?: BasicShader): void {
       if (!this.isLoaded && !this.shaderProgram.is_loaded) { console.log('Model not loaded, skip drawing'); return; }
-      gl.useProgram(this.shaderProgram.shaderProgram)
-      this.setUniform()
+      if(shaderProgram === undefined){ 
+        shaderProgram = this.shaderProgram;
+      }
+      gl.useProgram(shaderProgram.shaderProgram)
+      this.setUniform(shaderProgram)
 
       // Setup teapot position data
       gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffers.vertexPositions)
-      gl.vertexAttribPointer(this.shaderProgram.vertexPositionAttribute,
+      gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute,
         this.vertexBuffers.vertexPositions.itemSize,
         gl.FLOAT,
         false,
@@ -134,27 +137,29 @@ class ModelObject extends Transform {
         0)
 
       // Setup teapot front color data
+      if(shaderProgram.vertexFrontColorAttribute >= 0){
       gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffers.vertexFrontcolors)
-      gl.vertexAttribPointer(this.shaderProgram.vertexFrontColorAttribute,
+      gl.vertexAttribPointer(shaderProgram.vertexFrontColorAttribute,
         this.vertexBuffers.vertexFrontcolors.itemSize,
         gl.FLOAT,
         false,
         0,
         0)
-
+      }
+      
       // Setup teapot normal data
-      if(this.shaderProgram.vertexNormalAttribute >= 0){
+      if(shaderProgram.vertexNormalAttribute >= 0){
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffers.vertexNormals)
-        gl.vertexAttribPointer(this.shaderProgram.vertexNormalAttribute,
+        gl.vertexAttribPointer(shaderProgram.vertexNormalAttribute,
           this.vertexBuffers.vertexNormals.itemSize,
           gl.FLOAT,
           false,
           0,
           0)
       }
-      if(this.shaderProgram.vertexUVAttribute >= 0 && this.vertexBuffers.vertexTextureCoords !== undefined){
+      if(shaderProgram.vertexUVAttribute >= 0 && this.vertexBuffers.vertexTextureCoords !== undefined){
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffers.vertexTextureCoords)
-        gl.vertexAttribPointer(this.shaderProgram.vertexUVAttribute,
+        gl.vertexAttribPointer(shaderProgram.vertexUVAttribute,
           this.vertexBuffers.vertexTextureCoords.itemSize,
           gl.FLOAT,
           false,
@@ -164,7 +169,8 @@ class ModelObject extends Transform {
       gl.drawArrays(gl.TRIANGLES, 0, this.vertexBuffers.vertexPositions.numItems)
     }
 
-    setUniform (): void {
+    setUniform (shaderProgram: BasicShader): void {
+      gl.useProgram(shaderProgram.shaderProgram)
       let mat = mat4.create()
       mat4.scale(mat, mat, this.scale)
       
@@ -179,19 +185,19 @@ class ModelObject extends Transform {
       mat4.mul(mat, shear_mat, mat)
       mat4.mul(mat, mat4.fromTranslation(mat4.create(), this.position), mat)
       
-      gl.uniformMatrix4fv(this.shaderProgram.modelMatrixUniform, false, mat)
+      gl.uniformMatrix4fv(shaderProgram.modelMatrixUniform, false, mat)
 
       mat4.transpose(mat, mat4.invert(mat, mat))
-      gl.uniformMatrix4fv(this.shaderProgram.invT_modelMatrixUniform, false, mat)
+      gl.uniformMatrix4fv(shaderProgram.invT_modelMatrixUniform, false, mat)
 
-      gl.uniform1f(this.shaderProgram.glossUniform, this.gloss);
+      gl.uniform1f(shaderProgram.glossUniform, this.gloss);
 
 
-      if(this.shaderProgram.vertexUVAttribute >= 0) {
+      if(shaderProgram.vertexUVAttribute >= 0) {
         if(this.textures !== undefined){
-          gl.enableVertexAttribArray(this.shaderProgram.vertexUVAttribute)
-          gl.uniform1i(this.shaderProgram.textureUniform.enabled, 1);
-          gl.uniform1i(this.shaderProgram.textureUniform.texture, 0);
+          gl.enableVertexAttribArray(shaderProgram.vertexUVAttribute)
+          gl.uniform1i(shaderProgram.textureUniform.enabled, 1);
+          gl.uniform1i(shaderProgram.textureUniform.texture, 0);
           gl.activeTexture(gl.TEXTURE0);
           gl.bindTexture(gl.TEXTURE_2D, this.textures.buffer);
           gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
@@ -204,8 +210,8 @@ class ModelObject extends Transform {
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 255, 255]));
         }
         else{
-          gl.disableVertexAttribArray(this.shaderProgram.vertexUVAttribute)
-          gl.uniform1i(this.shaderProgram.textureUniform.enabled, 0);
+          gl.disableVertexAttribArray(shaderProgram.vertexUVAttribute)
+          gl.uniform1i(shaderProgram.textureUniform.enabled, 0);
         }
       } 
     }

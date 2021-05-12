@@ -49,6 +49,9 @@ class BasicShader {
     glossUniform?: WebGLUniformLocation;
     camPosUniform?: WebGLUniformLocation;
     textureUniform?: TextureUniforms;
+    
+    depthTexUniform?: WebGLUniformLocation;
+    depthMatrix?: WebGLUniformLocation;
 
     is_loaded: boolean = false;
 
@@ -115,6 +118,9 @@ class BasicShader {
       this.glossUniform = gl.getUniformLocation(this.shaderProgram, 'gloss')
       this.camPosUniform = gl.getUniformLocation(this.shaderProgram, 'uCamPos')
       
+      this.depthTexUniform = gl.getUniformLocation(this.shaderProgram, 'depth_tex');
+      this.depthMatrix = gl.getUniformLocation(this.shaderProgram, 'uDepthMatrix');
+
       this.is_loaded = true;
     }
 
@@ -128,6 +134,28 @@ class BasicShader {
       gl.uniformMatrix4fv(this.pMatrixUniform, false, mvp.pMatrix)
       gl.uniformMatrix4fv(this.mvMatrixUniform, false, mvp.mvMatrix)
       gl.uniformMatrix4fv(this.invT_mvMatrixUniform, false, mvp.invT_mvMatrix)
+    }
+
+    setDepthMatrixUniforms(depthTextureSize:number, depthMatrix: mat4, texture_buffer:WebGLTexture, idx=0){
+      gl.useProgram(this.shaderProgram);
+      // gl.uniform1i(this.shaderProgram.textureUniform.enabled, 1);
+      gl.uniform1i(this.depthTexUniform, 1+idx);
+      gl.activeTexture(gl.TEXTURE1+idx);
+      gl.bindTexture(gl.TEXTURE_2D, texture_buffer);
+      // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);  
+      gl.texImage2D(
+        gl.TEXTURE_2D,      // target
+        0,                  // mip level
+        gl.DEPTH_COMPONENT, // internal format
+        depthTextureSize,   // width
+        depthTextureSize,   // height
+        0,                  // border
+        gl.DEPTH_COMPONENT, // format
+        gl.UNSIGNED_INT,    // type
+        null);              // data
+      gl.uniformMatrix4fv(this.depthMatrix, false, depthMatrix);
+      // gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.FLOAT, );
     }
 
     setLightUniforms (lights: iPhongLight[]): void {
