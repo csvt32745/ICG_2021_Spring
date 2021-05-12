@@ -8,4 +8,7 @@ module.exports = {
         .loader('ts-shader-loader')
         .end()
     },
+    css: {
+      extract: false
+    },
   }

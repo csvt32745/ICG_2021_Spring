@@ -24,7 +24,6 @@
         <br/>
         <p class="array"> Shader </p>
         <select v-model="selected_shader" style="font-size:24px" class="array">
-            <!-- <option :value="selected_shader" selected>{{selected_shader.name}}</option> -->
             <option v-for="(_, name) in shader_list" :key=name :value=name> {{name}} </option>
         </select>
     </div>
