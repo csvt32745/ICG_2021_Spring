@@ -13,6 +13,7 @@ struct Light {
     // float gloss;
 };
 
+
 uniform float gloss;
 uniform Light lights[4];
 uniform vec3 uCamPos;
@@ -23,14 +24,6 @@ void main(void) {
     // vec3 camPos = uCamPos;
     vec3 normal = normalize(vNormal);
     vec3 viewDir = normalize(uCamPos - pos);
-    float rim = dot(normal, viewDir);
-    // if(rim < 0.2){
-    //     return;
-    // }else if(rim < .4){
-    //     gl_FragColor.rgb = vec3(1.- .2*smoothstep(.2, .4, rim));
-    //     return;
-    // }
-    // vec3 color = vec3(1, 0 ,0);
     vec3 light_color = vec3(0);
     vec3 spec_color = vec3(0);
     for(int i = 0; i < 4; ++i){

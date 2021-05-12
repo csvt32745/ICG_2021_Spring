@@ -1,6 +1,6 @@
 <template>
     <div class="object-component">
-        <h4> {{obj.name}} </h4>
+        <h4> Object: {{obj.name}} </h4>
 
         <p class="array"> Position </p>
         <div v-for="(val, index) in pos" :key=index class="array">
@@ -25,9 +25,14 @@
 
         <p class="array"> Shader </p>
         <select v-model="selected_shader" style="font-size:24px" class="array">
-            <option v-for="(_, name) in shader_list" :key=name :value=name> {{name}} </option>
+            <option v-for="(_, name) in shader_programs" :key=name :value=name> {{name}} </option>
         </select>
         <p class="array"> Gloss <input v-model.number="gloss" class="input"> </p>
+
+        <p v-if="is_texture" class="array"> Texture </p>
+        <select v-if="is_texture" v-model="selected_texture" style="font-size:24px" class="array">
+            <option v-for="(name, ) in texture_list" :key=name :value=name> {{name}} </option>
+        </select>
     </div>
 </template>
 
@@ -43,6 +48,8 @@ import { BasicShader } from '../ts/shaderProgram'
 
 
 declare let shader_programs: { [name: string]: BasicShader };
+declare var texture_list: string[];
+
 
 class Props {
     obj!: ObjectAttribute
@@ -51,11 +58,17 @@ class Props {
 export default class ObjectComponent extends Vue.with(Props) {
 
     euler: Array<number>
-    shader_list: { [name: string]: BasicShader };
+    shader_programs = shader_programs;
+    texture_list = texture_list;
 
-    beforeMount() {
-        this.shader_list = shader_programs;
+    get is_texture() {  return this.obj.object.textures !== undefined }
+    get selected_texture() {
+        if(this.obj.object.textures === undefined){
+            return 'none';
+        }
+        return this.obj.object.textures.name; 
     }
+    set selected_texture(name) { this.obj.object.loadTexture(name); }
 
     get selected_shader() { return this.obj.object.shaderProgram.name; }
     set selected_shader(name) { this.obj.object.shaderProgram = shader_programs[name]; }

@@ -20,13 +20,24 @@ class LightUniforms {
     }
 }
 
+class TextureUniforms {
+  enabled: WebGLUniformLocation;
+  texture: WebGLUniformLocation
+
+  constructor (name: string, shaderProgram: WebGLProgram) {
+    this.enabled = gl.getUniformLocation(shaderProgram, `${name}_enabled`);
+    this.texture = gl.getUniformLocation(shaderProgram, name);
+  }
+}
+
 class BasicShader {
     name: string;
     shaderProgram: WebGLProgram;
 
-    vertexPositionAttribute?: GLint;
-    vertexFrontColorAttribute?: GLint;
+    vertexPositionAttribute: GLint;
+    vertexFrontColorAttribute: GLint;
     vertexNormalAttribute?: GLint;
+    vertexUVAttribute? : GLint;
 
     modelMatrixUniform?: WebGLUniformLocation;
     invT_modelMatrixUniform?: WebGLUniformLocation;
@@ -37,6 +48,7 @@ class BasicShader {
     lightUniforms?: LightUniforms[] = [];
     glossUniform?: WebGLUniformLocation;
     camPosUniform?: WebGLUniformLocation;
+    textureUniform?: TextureUniforms;
 
     is_loaded: boolean = false;
 
@@ -86,6 +98,12 @@ class BasicShader {
       this.vertexNormalAttribute = gl.getAttribLocation(this.shaderProgram, 'aNormal')
       if(this.vertexNormalAttribute >= 0)
         gl.enableVertexAttribArray(this.vertexNormalAttribute)
+      
+      this.vertexUVAttribute = gl.getAttribLocation(this.shaderProgram, 'aUV')
+      if(this.vertexUVAttribute >= 0){
+        // enable attribute in modelObject class
+        this.textureUniform = new TextureUniforms('tex', this.shaderProgram);
+      }
 
       this.pMatrixUniform = gl.getUniformLocation(this.shaderProgram, 'uPMatrix')
       this.mvMatrixUniform = gl.getUniformLocation(this.shaderProgram, 'uMVMatrix')

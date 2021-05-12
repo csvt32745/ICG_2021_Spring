@@ -28,9 +28,8 @@ declare global {
     var shader_programs: { [name: string]: BasicShader };
     var lights: PhongLight[];
     var camera: Camera;
+    var texture_list: string[];
 }
-
-
 
 
 // common variables
@@ -40,6 +39,7 @@ declare var scene_objects: { [name: string]: ModelObject };
 declare var shader_programs: { [name: string]: BasicShader };
 declare var lights: PhongLight[];
 declare var camera: Camera;
+declare var texture_list: string[];
 
 var teapotAngle = 20;
 var lastTime    = 0;
@@ -51,6 +51,11 @@ function initGlobalVariables() {
     global.shader_programs = {}
     global.elapsed_time = .1;
     global.camera = new Camera({width: canvas.width, height: canvas.height});
+    global.texture_list = [
+        'debug.png',
+        'debug_white.png',
+        'debug_yellow.png',
+    ]
 }
 
 function setCanvasSize() {
@@ -74,13 +79,13 @@ function webGLStart() {
     
     camera.setPos(0 , 0, 30);
     
-    var l = new PhongLight().setDiffuse(.9, .2, .2).setGloss(64);
+    var l = new PhongLight().setDiffuse(.9, .2, .2);
     l.setPos(-15, 0, 0);
     lights.push(l);
-    l = new PhongLight().setAmbient(0, 0, 0).setDiffuse(.3, .3, .3).setGloss(1).setSpecular(.1, .1, .1);
+    l = new PhongLight().setAmbient(0, 0, 0).setDiffuse(.3, .3, .3).setSpecular(.1, .1, .1);
     l.setPos(0, 50, 50);
     lights.push(l);
-    l = new PhongLight().setAmbient(0, 0, 0).setDiffuse(.8, .8, .1).setGloss(4).setSpecular(.1, .1, .1);
+    l = new PhongLight().setAmbient(0, 0, 0).setDiffuse(.8, .8, .1).setSpecular(.1, .1, .1);
     l.setPos(0, 50, -100);
     lights.push(l); 
     
@@ -88,9 +93,14 @@ function webGLStart() {
     shader_programs["goraud"] = new BasicShader('goraud');
     shader_programs["flat"] = new BasicShader('flat');
     shader_programs["cel"] = new BasicShader('cel');
-    scene_objects["easter"] = new ModelObject(shader_programs["flat"], 'Easter').setScale(10).setRot(-90, 0, 0).setPos(-15, 0, 0);
-    scene_objects["easter2"] = new ModelObject(shader_programs["phong"], 'Easter').setScale(10).setRot(-90, -0, 0).setPos(15, 0, 0);
-    scene_objects["teapot"] = new ModelObject(shader_programs["cel"], 'Teapot').setScale(0.5);
+    shader_programs["custom"] = new BasicShader('custom');
+    scene_objects["easter"] = new ModelObject(shader_programs["flat"], 'Easter')
+        .setScale(10).setRot(-90, 0, 0).setPos(-15, 0, 0).setGloss(4);
+    scene_objects["easter2"] = new ModelObject(shader_programs["phong"], 'Easter')
+        .setScale(10).setRot(-90, -0, 0).setPos(15, 0, 0).setGloss(64);
+    scene_objects["teapot"] = new ModelObject(
+        shader_programs["custom"], 'Teapot', 'debug_yellow.png')
+        .setScale(0.5).setGloss(32);
     // scene_objects["kangaroo"] = new ModelObject(shader_programs["phong"], 'Kangaroo').setScale(20).setRot(-90, 0, 0).setPos(20, 10, 0);
 
     var vm = createApp(SceneObjectListComponent)
@@ -113,6 +123,9 @@ function initGL(canvas: HTMLCanvasElement) {
         global.gl = <WebGLRenderingContext> canvas.getContext("webgl") || <WebGLRenderingContext> canvas.getContext("experimental-webgl");
         if(!gl.getExtension('OES_standard_derivatives')){
             throw('OES std extension not supported!')
+        }
+        if(!gl.getExtension('WEBGL_depth_texture')){
+            throw('Depth texture extension not supported!')
         }
     } 
     catch (e) {

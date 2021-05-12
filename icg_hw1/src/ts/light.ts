@@ -8,21 +8,18 @@ interface iPhongLight {
     la: vec3;
     ld: vec3;
     ls: vec3;
-    gloss: number;
 }
 
 class PhongLight extends Transform implements iPhongLight {
     la: vec3 = vec3.fromValues(0.5, 0.5, 0.5);
     ld: vec3 = vec3.fromValues(0.5, 0.5, 0.5);
     ls: vec3 = vec3.fromValues(0.9, 0.9, 0.9);
-    gloss = 1.0;
 
     constructor () { super() }
 
     setAmbient (x: number, y: number, z: number): PhongLight { this.la = vec3.fromValues(x, y, z); return this }
     setDiffuse (x: number, y: number, z: number): PhongLight { this.ld = vec3.fromValues(x, y, z); return this }
     setSpecular (x: number, y: number, z: number): PhongLight { this.ls = vec3.fromValues(x, y, z); return this }
-    setGloss (g: number): PhongLight { this.gloss = g; return this }
 }
 
 export {
