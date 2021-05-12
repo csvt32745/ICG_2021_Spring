@@ -7,6 +7,7 @@
             {{xyz(index)}}
             <input v-model.number="pos[index]" class="input">
         </div>
+        <br/>
 
         <p class="array"> Rotation </p>
         <div v-for="(val, index) in rot" :key=index class="array">
@@ -20,8 +21,8 @@
             {{index}}
             <input v-model.number="shear[index]" class="input">
         </div>
-
         <br/>
+
         <p class="array"> Shader </p>
         <select v-model="selected_shader" style="font-size:24px" class="array">
             <option v-for="(_, name) in shader_list" :key=name :value=name> {{name}} </option>
@@ -69,14 +70,6 @@ export default class ObjectComponent extends Vue.with(Props) {
     get shear(){
         return this.obj.object.shear.valueOf() as Array<number>;
     }
-    
-
-    // set pos(val: Array<number>){
-    //     console.log(val)
-    //     this.obj.object.position[0] = val[0]
-    //     this.obj.object.position[1] = val[1]
-    //     this.obj.object.position[2] = val[2]
-    // }
 
     get rot(){
         this.euler = []

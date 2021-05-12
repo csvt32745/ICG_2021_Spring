@@ -14,6 +14,7 @@ import { PhongLight } from './ts/light'
 // import { Vue } from 'vue-class-component'
 
 window.onload = () => webGLStart();
+window.onresize = () => setCanvasSize();
 
 declare global {
     interface Window {
@@ -42,28 +43,35 @@ declare var camera: Camera;
 
 var teapotAngle = 20;
 var lastTime    = 0;
+var canvas: HTMLCanvasElement = document.createElement("canvas");
 
 function initGlobalVariables() {
     global.lights = []
     global.scene_objects = {}
     global.shader_programs = {}
     global.elapsed_time = .1;
+    global.camera = new Camera({width: canvas.width, height: canvas.height});
+}
+
+function setCanvasSize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight/2;
+    camera.viewportWidth = canvas.width;
+    camera.viewportHeight = canvas.height;
 }
 
 function webGLStart() {
-    var canvas = <HTMLCanvasElement> document.createElement("canvas")
     canvas.id = "ICG-canvas"
-    canvas.style.backgroundColor = "#0078D4"
-    canvas.style.top = '0'
-    canvas.style.position = 'fixed'
-    // canvas.style.width = '50%'
-    canvas.style.height = '50%'
     canvas.width  = 1280;
     canvas.height = 720;
+    canvas.style.backgroundColor = "#0078D4"
+    canvas.style.top = '0'
+    canvas.style.left = '0'
+    canvas.style.position = 'fixed'
     initGL(canvas);
-    
     initGlobalVariables();
-    global.camera = new Camera({width: canvas.width, height: canvas.height});
+    setCanvasSize();
+    
     camera.setPos(0 , 0, 30);
     
     var l = new PhongLight().setDiffuse(.9, .2, .2).setGloss(64);

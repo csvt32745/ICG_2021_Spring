@@ -73,13 +73,11 @@ class ModelObject extends Transform {
       this.vertexBuffers = {}
       for (const key in this.vertexAttributes) {
         if (key !== undefined && key !== 'vertexTextureCoords') {
-          // let gl = global.gl;
           const buf = gl.createBuffer() as CustomWebGLBuffer
           gl.bindBuffer(gl.ARRAY_BUFFER, buf)
           gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(<Float32Array> this.vertexAttributes[key]), gl.STATIC_DRAW)
           buf.itemSize = 3
           buf.numItems = this.vertexAttributes[key].length / 3
-          // console.log(buf);
           this.vertexBuffers[key] = buf
         }
       }

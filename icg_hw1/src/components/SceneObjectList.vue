@@ -30,7 +30,7 @@ export default class SceneObjectListComponent extends Vue {
     obj: ObjectAttribute[] = []
     selected_default: ObjectAttribute = { name: "null", object: null };
     selected: ObjectAttribute = this.selected_default;
-    
+
     beforeMount() {
         this.obj = [];
         Object.entries(scene_objects).forEach(
@@ -58,52 +58,16 @@ export default class SceneObjectListComponent extends Vue {
     top: 50%;
     font-family: Avenir, Helvetica, Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+    /* -moz-osx-font-smoothing: grayscale; */
     /* float:inline-end; */
     text-align: left;
     /* right: 500px; */
     /* color: #2c3e50; */
     margin-top: 10px;
-    width: 50%;
-    height: 25%;
+    width: 100%;
+    height: 50%;
     font-size: 18px;
     display: flex;
 }
 
-/* Split the screen in half */
-.scenelist {
-    resize:both;
-    height: 50%;
-    width: 25%;
-    position: inherit;
-    z-index: 1;
-    /* top: 0; */
-    /* overflow-x: hidden;
-    padding-top: 20px; */
-    /* min-width: 10px; */
-    display: inline-flex;
-    left: 0;
-    background-color: #111;
-}
-
-.object {
-    resize:both;
-    height: 50%;
-    width: 25%;
-    position: inherit;
-    z-index: 1;
-    /* min-width: 10px; */
-    display: inline-flex;
-    left: 25%;
-    background-color:bisque;
-}
-
-/* If you want the content centered horizontally and vertically */
-.centered {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-}
 </style>
