@@ -21,6 +21,7 @@ class LightUniforms {
 }
 
 class BasicShader {
+    name: string;
     shaderProgram: WebGLProgram;
 
     vertexPositionAttribute?: GLint;
@@ -37,6 +38,7 @@ class BasicShader {
     camPosUniform?: WebGLUniformLocation;
 
     constructor (shader_name: string) {
+      this.name = shader_name;
       this.getShader(shader_name)
       this.initShaders()
     }

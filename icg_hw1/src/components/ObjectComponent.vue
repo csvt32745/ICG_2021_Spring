@@ -1,0 +1,133 @@
+<template>
+    <div class="object-component">
+        <h4> {{obj.name}} </h4>
+
+        <p class="array"> Position </p>
+        <div v-for="(val, index) in pos" :key=index class="array">
+            {{xyz(index)}}
+            <input v-model.number="pos[index]" class="input">
+        </div>
+
+        <p class="array"> Rotation </p>
+        <div v-for="(val, index) in rot" :key=index class="array">
+            {{xyz(index)}}
+            <input v-model.number="euler[index]" @keyup.enter="rot_changed" class="input">
+        </div>
+        <br/>
+
+        <p class="array"> Shear </p>
+        <div v-for="(val, index) in shear" :key=index class="array">
+            {{index}}
+            <input v-model.number="shear[index]" class="input">
+        </div>
+
+        <br/>
+        <p class="array"> Shader </p>
+        <select v-model="selected_shader" style="font-size:24px" class="array">
+            <!-- <option :value="selected_shader" selected>{{selected_shader.name}}</option> -->
+            <option v-for="(_, name) in shader_list" :key=name :value=name> {{name}} </option>
+        </select>
+    </div>
+</template>
+
+
+<script lang="ts">
+import component from '*.vue';
+import { Options, Vue, prop } from 'vue-class-component'
+import slider from "vue3-slider"
+import { vec3, quat } from 'gl-matrix'
+
+import { ModelObject, ObjectAttribute } from '../ts/modelObject'
+import { getEuler } from '../ts/transform'
+import { BasicShader } from '../ts/shaderProgram'
+
+
+declare let shader_programs: { [name: string]: BasicShader };
+
+class Props {
+    obj!: ObjectAttribute
+}
+
+Options({
+    components: {slider}
+})
+export default class ObjectComponent extends Vue.with(Props) {
+
+    euler: Array<number>
+    shader_list: { [name: string]: BasicShader };
+
+    beforeMount() {
+        this.shader_list = shader_programs;
+    }
+
+    get selected_shader() { return this.obj.object.shaderProgram.name; }
+    set selected_shader(name) { this.obj.object.shaderProgram = shader_programs[name]; }
+
+    get pos(){
+        return this.obj.object.position.valueOf() as Array<number>;
+    }
+    
+    get shear(){
+        return this.obj.object.shear.valueOf() as Array<number>;
+    }
+    
+
+    // set pos(val: Array<number>){
+    //     console.log(val)
+    //     this.obj.object.position[0] = val[0]
+    //     this.obj.object.position[1] = val[1]
+    //     this.obj.object.position[2] = val[2]
+    // }
+
+    get rot(){
+        this.euler = []
+        getEuler(this.euler, this.obj.object.rotation);
+        this.euler.forEach((val, i) => {
+            this.euler[i] = (val/Math.PI*180)
+        })
+        return this.euler;
+    }
+
+    rot_changed(){
+        this.obj.object.rotation = quat.fromEuler(quat.create(), this.euler[0], this.euler[1], this.euler[2]);
+        // console.log(this.euler)
+    }
+
+    xyz(index){
+        return "XYZ"[index];
+    }
+}
+
+// export default {
+//     name: 'ObjectComponent',
+//     props: ['obj']
+// }
+
+</script>
+
+<style>
+.object-component {
+    position:inherit;
+    /* top: 55%; */
+    /* right: 50%; */
+    /* left: 50%; */
+    font-family: Avenir, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* float: right; */
+    text-align: left;
+    font-size: 24px;
+    line-break: strict;
+    line-height: 0%;
+}
+
+.array {
+    display: inline-block;
+    padding: 0px 5px;
+}
+
+.input {
+    font-size: 18px;
+    width: 60px;
+}
+</style>

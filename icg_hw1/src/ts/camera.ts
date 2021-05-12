@@ -4,7 +4,7 @@ import { Transform } from './transform'
 class Camera extends Transform {
     viewportWidth: number;
     viewportHeight: number;
-    FOV = 45;
+    FOV = 3.14*60/180;
 
     mvMatrix: mat4 = mat4.create();
     pMatrix: mat4 = mat4.create();
@@ -19,6 +19,8 @@ class Camera extends Transform {
     setMVP () {
       // Setup Projection Matrix
       mat4.perspective(this.pMatrix, this.FOV, this.viewportWidth / this.viewportHeight, 0.1, 300.0)
+      // let width = 15;
+      // mat4.ortho(this.pMatrix, -width*this.viewportWidth / this.viewportHeight, width*this.viewportWidth / this.viewportHeight, -width, width, 0.1, 300.0)
 
       // Setup Model-View Matrix
       mat4.fromRotationTranslation(this.mvMatrix, this.rotation, this.position)

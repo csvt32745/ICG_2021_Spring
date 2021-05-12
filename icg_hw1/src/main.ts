@@ -3,6 +3,7 @@ import { mat4, vec3, quat } from 'gl-matrix'
 import './js/webgl-utils'
 import { createApp } from 'vue'
 import App from './App.vue'
+import SceneObjectListComponent from './components/SceneObjectList.vue'
 
 /* Custom Module */
 import { Transform } from './ts/transform'
@@ -10,6 +11,7 @@ import { ModelObject } from './ts/modelObject'
 import { BasicShader } from './ts/shaderProgram'
 import { Camera } from './ts/camera'
 import { PhongLight } from './ts/light'
+// import { Vue } from 'vue-class-component'
 
 window.onload = () => webGLStart();
 
@@ -20,36 +22,50 @@ declare global {
     }
     var gl: WebGLRenderingContext
     var elapsed_time: number
+
+    var scene_objects: { [name: string]: ModelObject };
+    var shader_programs: { [name: string]: BasicShader };
+    var lights: PhongLight[];
+    var camera: Camera;
 }
 
-// createApp(App).mount('#app')
+
 
 
 // common variables
 declare var gl: WebGLRenderingContext;
 declare var elapsed_time: number;
+declare var scene_objects: { [name: string]: ModelObject };
+declare var shader_programs: { [name: string]: BasicShader };
+declare var lights: PhongLight[];
+declare var camera: Camera;
 
 var teapotAngle = 20;
 var lastTime    = 0;
 
-var scene_objects: { [name: string]: ModelObject } = {};
-var shader_programs: { [name: string]: BasicShader } = {};
-var lights: PhongLight[] = [];
-
-var camera: Camera;
+function initGlobalVariables() {
+    global.lights = []
+    global.scene_objects = {}
+    global.shader_programs = {}
+    global.elapsed_time = .1;
+}
 
 function webGLStart() {
     var canvas = <HTMLCanvasElement> document.createElement("canvas")
     canvas.id = "ICG-canvas"
     canvas.style.backgroundColor = "#0078D4"
+    canvas.style.top = '0'
+    canvas.style.position = 'fixed'
+    // canvas.style.width = '50%'
+    canvas.style.height = '50%'
     canvas.width  = 1280;
     canvas.height = 720;
     initGL(canvas);
-
-    camera = new Camera({width: canvas.width, height: canvas.height});
+    
+    initGlobalVariables();
+    global.camera = new Camera({width: canvas.width, height: canvas.height});
     camera.setPos(0 , 0, 30);
-
-    global.elapsed_time = .1;
+    
     var l = new PhongLight().setDiffuse(.9, .2, .2).setGloss(64);
     l.setPos(-15, 0, 0);
     lights.push(l);
@@ -58,17 +74,24 @@ function webGLStart() {
     lights.push(l);
     l = new PhongLight().setAmbient(0, 0, 0).setDiffuse(.8, .8, .1).setGloss(4).setSpecular(.1, .1, .1);
     l.setPos(0, 50, -100);
-    lights.push(l);
-
+    lights.push(l); 
+    
     shader_programs["phong"] = new BasicShader('phong');
     shader_programs["goraud"] = new BasicShader('goraud');
     shader_programs["flat"] = new BasicShader('flat');
     shader_programs["cel"] = new BasicShader('cel');
-    scene_objects["easter"] = new ModelObject(shader_programs["flat"], 'Easter').setScale(10).setRot(-90, 30, 0).setPos(-15, 0, 0);
-    scene_objects["easter2"] = new ModelObject(shader_programs["phong"], 'Easter').setScale(10).setRot(-90, -30, 0).setPos(15, 0, 0);
+    scene_objects["easter"] = new ModelObject(shader_programs["flat"], 'Easter').setScale(10).setRot(-90, 0, 0).setPos(-15, 0, 0);
+    scene_objects["easter2"] = new ModelObject(shader_programs["phong"], 'Easter').setScale(10).setRot(-90, -0, 0).setPos(15, 0, 0);
     scene_objects["teapot"] = new ModelObject(shader_programs["cel"], 'Teapot').setScale(0.5);
     // scene_objects["kangaroo"] = new ModelObject(shader_programs["phong"], 'Kangaroo').setScale(20).setRot(-90, 0, 0).setPos(20, 10, 0);
 
+    var vm = createApp(SceneObjectListComponent)
+    vm.mount('#app')
+    
+    // vm.data.pos = pos: scene_objects["teapot"].position
+    // vm.$data = scene_objects["teapot"].position;
+    
+    
     gl.clearColor(0.5, 0.5, 0.5, 1.0);
     gl.enable(gl.DEPTH_TEST);
     
@@ -100,7 +123,7 @@ function update() {
     scene_objects['teapot'].rotateY(degToRad(0.05) * elapsed_time); 
     // scene_objects['easter'].rotateZ(degToRad(0.05) * elapsed_time); 
     // scene_objects['kangaroo'].rotateZ(degToRad(0.01) * elapsed_time); 
-    lights[0].setPos(500*Math.cos(teapotAngle), lights[0].position[1], 500*Math.sin(teapotAngle))
+    lights[0].setPos(30*Math.cos(teapotAngle), lights[0].position[1], 30*Math.sin(teapotAngle))
     // scene_objects['teapot'].translate(0, 0, -.01 * elapsed_time);
     // camera.rotateY(degToRad(0.05) * elapsed_time);
 }

@@ -8,6 +8,11 @@ class CustomWebGLBuffer extends WebGLBuffer {
     numItems: number;
 }
 
+interface ObjectAttribute {
+  name: string,
+  object: ModelObject
+}
+
 interface VertexAttributeBuffers {
     vertexPositions?: CustomWebGLBuffer,
     vertexNormals?: CustomWebGLBuffer,
@@ -28,7 +33,7 @@ class ModelObject extends Transform {
     position: vec3 = vec3.zero(vec3.create());
     rotation: quat = quat.create();
     scale: vec3 = vec3.fromValues(1, 1, 1);
-
+    shear: vec3 = vec3.zero(vec3.create());
     isLoaded = false;
 
     vertexAttributes: VertexAttributes;
@@ -117,9 +122,20 @@ class ModelObject extends Transform {
     }
 
     setUniform (): void {
-      const mat = mat4.create()
-      mat4.mul(mat, mat4.fromQuat(mat4.create(), this.rotation), mat4.fromScaling(mat4.create(), this.scale))
+      let mat = mat4.create()
+      mat4.scale(mat, mat, this.scale)
+      
+      let shear_mat = mat4.fromValues(
+        1, this.shear[2], 0, 0,
+        this.shear[0], 1, 0, 0,
+        this.shear[1], 0, 1, 0,
+        0, 0, 0, 1
+      )
+
+      mat4.mul(mat, mat4.fromQuat(mat4.create(), this.rotation), mat)
+      mat4.mul(mat, shear_mat, mat)
       mat4.mul(mat, mat4.fromTranslation(mat4.create(), this.position), mat)
+      
       gl.uniformMatrix4fv(this.shaderProgram.modelMatrixUniform, false, mat)
 
       mat4.transpose(mat, mat4.invert(mat, mat))
@@ -140,5 +156,6 @@ class ModelObject extends Transform {
 }
 
 export {
-  ModelObject
+  ModelObject,
+  ObjectAttribute
 }

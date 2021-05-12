@@ -26,7 +26,7 @@ void main(void) {
 
     // Color
     gl_FragColor = vec4(0, 0, 0, 1);
-    vec3 color = fragcolor;
+    vec3 color = fragcolor.rgb;
     vec3 light_color = vec3(0);
     vec3 spec_color = vec3(0);
     for(int i = 0; i < 4; ++i){
