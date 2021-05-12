@@ -11,11 +11,12 @@ struct Light {
     vec3 la; // Ambient
     vec3 ld; // Diffuse
     vec3 ls; // Specular
-    float gloss;
+    // float gloss;
 };
 
 uniform Light lights[4];
 uniform vec3 uCamPos;
+uniform float gloss;
 
 void main(void) {
     gl_FragColor = vec4(0, 0, 0, 1);
@@ -41,12 +42,12 @@ void main(void) {
         vec3 lightDir = normalize(lights[i].position - pos);
 
         float dif = dot(normal, lightDir);
-        if(dif > 0.6) dif = .6;
-        else dif = .2;
+        if(dif > 0.6) dif = .8;
+        else dif = dif*0.1;
         light_color += lights[i].la + dif * lights[i].ld;
         
         vec3 halfDir = normalize(viewDir + lightDir);
-        float spec = pow(max(dot(normal, halfDir), 0.), lights[i].gloss);
+        float spec = pow(max(dot(normal, halfDir), 0.), gloss);
         spec = step(.4, spec);
         // spec = smoothstep(.2, 1., spec);
         spec_color += lights[i].ls * spec;

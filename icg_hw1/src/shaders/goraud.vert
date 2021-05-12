@@ -13,9 +13,10 @@ struct Light {
     vec3 la; // Ambient
     vec3 ld; // Diffuse
     vec3 ls; // Specular
-    float gloss;
+    // float gloss;
 };
 
+uniform float gloss;
 uniform Light lights[4];
 uniform vec3 uCamPos;
 
@@ -39,7 +40,7 @@ void shading() {
         light_color += lights[i].la + dif * lights[i].ld;
         
         vec3 halfDir = normalize(viewDir + lightDir);
-        float spec = pow(max(dot(normal, halfDir), 0.), lights[i].gloss);
+        float spec = pow(max(dot(normal, halfDir), 0.), gloss);
         spec_color += lights[i].ls * spec;
     }
     fragcolor = light_color * aFrontColor + spec_color;

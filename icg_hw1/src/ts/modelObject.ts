@@ -34,6 +34,9 @@ class ModelObject extends Transform {
     rotation: quat = quat.create();
     scale: vec3 = vec3.fromValues(1, 1, 1);
     shear: vec3 = vec3.zero(vec3.create());
+
+    gloss: number = 16;
+
     isLoaded = false;
 
     vertexAttributes: VertexAttributes;
@@ -72,12 +75,19 @@ class ModelObject extends Transform {
       // console.log(this.vertexAttributes.vertexPositions);
       this.vertexBuffers = {}
       for (const key in this.vertexAttributes) {
-        if (key !== undefined && key !== 'vertexTextureCoords') {
-          const buf = gl.createBuffer() as CustomWebGLBuffer
+        if (key !== undefined && key != 'vertexTextureCoords') {
+          let buf = gl.createBuffer() as CustomWebGLBuffer
           gl.bindBuffer(gl.ARRAY_BUFFER, buf)
           gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(<Float32Array> this.vertexAttributes[key]), gl.STATIC_DRAW)
           buf.itemSize = 3
           buf.numItems = this.vertexAttributes[key].length / 3
+          this.vertexBuffers[key] = buf
+        }else if(key == 'vertexTextureCoords'){
+          let buf = gl.createBuffer() as CustomWebGLBuffer
+          gl.bindBuffer(gl.ARRAY_BUFFER, buf)
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(<Float32Array> this.vertexAttributes[key]), gl.STATIC_DRAW)
+          buf.itemSize = 2
+          buf.numItems = this.vertexAttributes[key].length / 2
           this.vertexBuffers[key] = buf
         }
       }
@@ -85,7 +95,7 @@ class ModelObject extends Transform {
     }
 
     draw (): void {
-      if (!this.isLoaded) { return }
+      if (!this.isLoaded && !this.shaderProgram.is_loaded) { console.log('Model not loaded, skip drawing'); return; }
       gl.useProgram(this.shaderProgram.shaderProgram)
       this.setUniform()
 
@@ -108,14 +118,16 @@ class ModelObject extends Transform {
         0)
 
       // Setup teapot normal data
-      gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffers.vertexNormals)
-      gl.vertexAttribPointer(this.shaderProgram.vertexNormalAttribute,
-        this.vertexBuffers.vertexNormals.itemSize,
-        gl.FLOAT,
-        false,
-        0,
-        0)
-
+      if(this.shaderProgram.vertexNormalAttribute >= 0){
+        // console.log(this.vertexBuffers.vertexNormals)
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffers.vertexNormals)
+        gl.vertexAttribPointer(this.shaderProgram.vertexNormalAttribute,
+          this.vertexBuffers.vertexNormals.itemSize,
+          gl.FLOAT,
+          false,
+          0,
+          0)
+      }
       gl.drawArrays(gl.TRIANGLES, 0, this.vertexBuffers.vertexPositions.numItems)
     }
 
@@ -138,6 +150,8 @@ class ModelObject extends Transform {
 
       mat4.transpose(mat, mat4.invert(mat, mat))
       gl.uniformMatrix4fv(this.shaderProgram.invT_modelMatrixUniform, false, mat)
+
+      gl.uniform1f(this.shaderProgram.glossUniform, this.gloss);
     }
 
     setScale (s: number):ModelObject { super.setScale(s); return this }

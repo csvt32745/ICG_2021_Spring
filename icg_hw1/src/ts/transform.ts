@@ -48,6 +48,10 @@ export function getEuler(out, quat) {
     out[2] = Math.atan2(2 * (x * y + z * w), 1 - 2 * (y2 + z2));
   }
   // TODO: Return them as degrees and not as radians
+  
+  out.forEach((val, i) => {
+    out[i] = (val/Math.PI*180)
+  })
   return out;
 }
 

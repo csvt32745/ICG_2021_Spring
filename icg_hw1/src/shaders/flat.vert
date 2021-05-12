@@ -1,6 +1,5 @@
 attribute vec3 aVertexPosition;
 attribute vec3 aFrontColor;
-// attribute vec3 aNormal;
 
 uniform mat4 uModelMatrix;
 uniform mat4 uMVMatrix;

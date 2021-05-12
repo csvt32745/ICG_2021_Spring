@@ -8,7 +8,7 @@ class LightUniforms {
     la: WebGLUniformLocation;
     ld: WebGLUniformLocation;
     ls: WebGLUniformLocation;
-    gloss: WebGLUniformLocation;
+    // gloss: WebGLUniformLocation;
 
     constructor (idx: number, shaderProgram: WebGLProgram) {
       this.enabled = gl.getUniformLocation(shaderProgram, `lights[${idx}].enabled`)
@@ -16,7 +16,7 @@ class LightUniforms {
       this.la = gl.getUniformLocation(shaderProgram, `lights[${idx}].la`)
       this.ld = gl.getUniformLocation(shaderProgram, `lights[${idx}].ld`)
       this.ls = gl.getUniformLocation(shaderProgram, `lights[${idx}].ls`)
-      this.gloss = gl.getUniformLocation(shaderProgram, `lights[${idx}].gloss`)
+      // this.gloss = gl.getUniformLocation(shaderProgram, `lights[${idx}].gloss`)
     }
 }
 
@@ -35,7 +35,10 @@ class BasicShader {
     pMatrixUniform?: WebGLUniformLocation;
 
     lightUniforms?: LightUniforms[] = [];
+    glossUniform?: WebGLUniformLocation;
     camPosUniform?: WebGLUniformLocation;
+
+    is_loaded: boolean = false;
 
     constructor (shader_name: string) {
       this.name = shader_name;
@@ -79,8 +82,10 @@ class BasicShader {
       gl.enableVertexAttribArray(this.vertexPositionAttribute)
       this.vertexFrontColorAttribute = gl.getAttribLocation(this.shaderProgram, 'aFrontColor')
       gl.enableVertexAttribArray(this.vertexFrontColorAttribute)
+
       this.vertexNormalAttribute = gl.getAttribLocation(this.shaderProgram, 'aNormal')
-      gl.enableVertexAttribArray(this.vertexNormalAttribute)
+      if(this.vertexNormalAttribute >= 0)
+        gl.enableVertexAttribArray(this.vertexNormalAttribute)
 
       this.pMatrixUniform = gl.getUniformLocation(this.shaderProgram, 'uPMatrix')
       this.mvMatrixUniform = gl.getUniformLocation(this.shaderProgram, 'uMVMatrix')
@@ -89,7 +94,10 @@ class BasicShader {
       this.invT_modelMatrixUniform = gl.getUniformLocation(this.shaderProgram, 'uinvTModelMatrix')
 
       for (let i = 0; i < 4; i++) { this.lightUniforms.push(new LightUniforms(i, this.shaderProgram)) }
+      this.glossUniform = gl.getUniformLocation(this.shaderProgram, 'gloss')
       this.camPosUniform = gl.getUniformLocation(this.shaderProgram, 'uCamPos')
+      
+      this.is_loaded = true;
     }
 
     setCamPosUniform (camPos: vec3): void {
@@ -111,7 +119,7 @@ class BasicShader {
         gl.uniform3fv(this.lightUniforms[idx].la, light.la)
         gl.uniform3fv(this.lightUniforms[idx].ld, light.ld)
         gl.uniform3fv(this.lightUniforms[idx].ls, light.ls)
-        gl.uniform1f(this.lightUniforms[idx].gloss, light.gloss)
+        // gl.uniform1f(this.lightUniforms[idx].gloss, light.gloss)
         gl.uniform3fv(this.lightUniforms[idx].position, light.position)
       })
     }

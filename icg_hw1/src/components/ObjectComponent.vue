@@ -27,6 +27,7 @@
         <select v-model="selected_shader" style="font-size:24px" class="array">
             <option v-for="(_, name) in shader_list" :key=name :value=name> {{name}} </option>
         </select>
+        <p class="array"> Gloss <input v-model.number="gloss" class="input"> </p>
     </div>
 </template>
 
@@ -34,7 +35,6 @@
 <script lang="ts">
 import component from '*.vue';
 import { Options, Vue, prop } from 'vue-class-component'
-import slider from "vue3-slider"
 import { vec3, quat } from 'gl-matrix'
 
 import { ModelObject, ObjectAttribute } from '../ts/modelObject'
@@ -48,9 +48,6 @@ class Props {
     obj!: ObjectAttribute
 }
 
-Options({
-    components: {slider}
-})
 export default class ObjectComponent extends Vue.with(Props) {
 
     euler: Array<number>
@@ -63,37 +60,25 @@ export default class ObjectComponent extends Vue.with(Props) {
     get selected_shader() { return this.obj.object.shaderProgram.name; }
     set selected_shader(name) { this.obj.object.shaderProgram = shader_programs[name]; }
 
-    get pos(){
-        return this.obj.object.position.valueOf() as Array<number>;
-    }
+    get gloss() { return this.obj.object.gloss; }
+    set gloss(val: number) { this.obj.object.gloss = val; }
+
+    get pos(){ return this.obj.object.position.valueOf() as Array<number>; }
     
-    get shear(){
-        return this.obj.object.shear.valueOf() as Array<number>;
-    }
+    get shear(){ return this.obj.object.shear.valueOf() as Array<number>; }
 
     get rot(){
         this.euler = []
         getEuler(this.euler, this.obj.object.rotation);
-        this.euler.forEach((val, i) => {
-            this.euler[i] = (val/Math.PI*180)
-        })
         return this.euler;
     }
 
     rot_changed(){
         this.obj.object.rotation = quat.fromEuler(quat.create(), this.euler[0], this.euler[1], this.euler[2]);
-        // console.log(this.euler)
     }
 
-    xyz(index){
-        return "XYZ"[index];
-    }
+    xyz(index){ return "XYZ"[index]; }
 }
-
-// export default {
-//     name: 'ObjectComponent',
-//     props: ['obj']
-// }
 
 </script>
 
