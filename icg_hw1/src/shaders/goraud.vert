@@ -13,7 +13,7 @@ struct Light {
     vec3 la; // Ambient
     vec3 ld; // Diffuse
     vec3 ls; // Specular
-    // float gloss;
+    float attenuation;
 };
 
 uniform float gloss;
@@ -34,14 +34,17 @@ void shading() {
         if(!lights[i].enabled){
             break;
         }
-        vec3 lightDir = normalize(lights[i].position - pos);
+        vec3 lightDir = (lights[i].position - pos);
+        float atten = distance(lightDir, vec3(0));
+        atten = pow(max(.1, lights[i].attenuation-atten)/lights[i].attenuation, 2.);
+        lightDir = normalize(lightDir);
 
-        float dif = dot(normal, lightDir);
-        light_color += lights[i].la + dif * lights[i].ld;
+        float dif = dot(normal, lightDir)*atten;
+        light_color += (lights[i].la + dif * lights[i].ld);
         
         vec3 halfDir = normalize(viewDir + lightDir);
-        float spec = pow(max(dot(normal, halfDir), 0.), gloss);
-        spec_color += lights[i].ls * spec;
+        float spec = pow(max(dot(normal, halfDir), 0.), gloss)*atten;
+        spec_color += (lights[i].ls * spec);
     }
     fragcolor = light_color * aFrontColor + spec_color;
 }

@@ -79,14 +79,14 @@ function webGLStart() {
     
     camera.setPos(0 , 0, 30);
     
-    var l = new PhongLight().setDiffuse(.9, .2, .2);
+    var l = new PhongLight().setDiffuse(.9, .2, .2).setAttenuation(300);
     l.setPos(-15, 0, 0);
     lights.push(l);
-    l = new PhongLight().setAmbient(0, 0, 0).setDiffuse(.3, .3, .3).setSpecular(.1, .1, .1);
-    l.setPos(0, 50, 50);
+    l = new PhongLight().setAmbient(.1, .1, .1).setDiffuse(.9, .9, .9).setSpecular(.5, .5, .5).setAttenuation(100);
+    l.setPos(0, 50, 0);
     lights.push(l);
-    l = new PhongLight().setAmbient(0, 0, 0).setDiffuse(.8, .8, .1).setSpecular(.1, .1, .1);
-    l.setPos(0, 50, -100);
+    l = new PhongLight().setAmbient(0, 0, 0).setDiffuse(.5, .5, .5).setSpecular(.0, .0, .0).setAttenuation(500);
+    l.setPos(0, 50, 50);
     lights.push(l); 
     
     shader_programs["phong"] = new BasicShader('phong');
@@ -94,6 +94,9 @@ function webGLStart() {
     shader_programs["flat"] = new BasicShader('flat');
     shader_programs["cel"] = new BasicShader('cel');
     shader_programs["custom"] = new BasicShader('custom');
+    scene_objects["plane"] = new ModelObject(
+        shader_programs["custom"], 'plane', 'debug.png')
+        .setScale(100).setPos(0, -10, 0).setRot(0, 0, 0).setGloss(16);
     scene_objects["easter"] = new ModelObject(shader_programs["flat"], 'Easter')
         .setScale(10).setRot(-90, 0, 0).setPos(-15, 0, 0).setGloss(4);
     scene_objects["easter2"] = new ModelObject(shader_programs["phong"], 'Easter')
@@ -140,11 +143,12 @@ function degToRad(degrees) {
 }
 
 function update() {
-    teapotAngle += degToRad(0.02) * elapsed_time;
+    teapotAngle += degToRad(0.03) * elapsed_time;
     scene_objects['teapot'].rotateY(degToRad(0.05) * elapsed_time); 
     // scene_objects['easter'].rotateZ(degToRad(0.05) * elapsed_time); 
     // scene_objects['kangaroo'].rotateZ(degToRad(0.01) * elapsed_time); 
-    lights[0].setPos(30*Math.cos(teapotAngle), lights[0].position[1], 30*Math.sin(teapotAngle))
+    lights[0].setPos(50*Math.cos(teapotAngle), lights[0].position[1], 50*Math.sin(teapotAngle))
+    lights[1].setPos(0, lights[1].position[1], 100*Math.cos(teapotAngle))
     // scene_objects['teapot'].translate(0, 0, -.01 * elapsed_time);
     // camera.rotateY(degToRad(0.05) * elapsed_time);
 }

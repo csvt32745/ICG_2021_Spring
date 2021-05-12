@@ -14,7 +14,7 @@ struct Light {
     vec3 la; // Ambient
     vec3 ld; // Diffuse
     vec3 ls; // Specular
-    // float gloss;
+    float attenuation;
 };
 
 
@@ -28,7 +28,7 @@ void main(void) {
     if(tex_enabled){
         vec2 uv_ = uv;
         // uv_ = uv_*0.2;
-        uv_.y *= -1.;
+        // uv_.y *= -1.;
         color = texture2D(tex, uv_).rgb;
         // gl_FragColor = texture2D(tex, uv_);
         // return;
@@ -53,19 +53,17 @@ void main(void) {
         if(!lights[i].enabled){
             break;
         }
-        // vec3 lightPos = (invModelMatrix * vec4(lights[i].position, 1)).xyz;
-        vec3 lightDir = normalize(lights[i].position - pos);
+        vec3 lightDir = (lights[i].position - pos);
+        float atten = distance(lightDir, vec3(0));
+        atten = pow(max(.1, lights[i].attenuation-atten)/lights[i].attenuation, 2.);
+        lightDir = normalize(lightDir);
 
-        float dif = dot(normal, lightDir);
-        // if(dif > 0.5) dif = .7;
-        // else dif = .2;
-        light_color += lights[i].la + dif * lights[i].ld;
+        float dif = dot(normal, lightDir)*atten;
+        light_color += (lights[i].la + dif * lights[i].ld);
         
         vec3 halfDir = normalize(viewDir + lightDir);
-        float spec = pow(max(dot(normal, halfDir), 0.), gloss);
-        // spec = step(.75, spec);
-        // spec = smoothstep(.2, 1., spec);
-        spec_color += lights[i].ls * spec;
+        float spec = pow(max(dot(normal, halfDir), 0.), gloss)*atten;
+        spec_color += (lights[i].ls * spec);
     }
     gl_FragColor.rgb = light_color * color + spec_color;
 }

@@ -8,7 +8,7 @@ class LightUniforms {
     la: WebGLUniformLocation;
     ld: WebGLUniformLocation;
     ls: WebGLUniformLocation;
-    // gloss: WebGLUniformLocation;
+    attenuation: WebGLUniformLocation;
 
     constructor (idx: number, shaderProgram: WebGLProgram) {
       this.enabled = gl.getUniformLocation(shaderProgram, `lights[${idx}].enabled`)
@@ -16,7 +16,7 @@ class LightUniforms {
       this.la = gl.getUniformLocation(shaderProgram, `lights[${idx}].la`)
       this.ld = gl.getUniformLocation(shaderProgram, `lights[${idx}].ld`)
       this.ls = gl.getUniformLocation(shaderProgram, `lights[${idx}].ls`)
-      // this.gloss = gl.getUniformLocation(shaderProgram, `lights[${idx}].gloss`)
+      this.attenuation = gl.getUniformLocation(shaderProgram, `lights[${idx}].attenuation`)
     }
 }
 
@@ -137,7 +137,7 @@ class BasicShader {
         gl.uniform3fv(this.lightUniforms[idx].la, light.la)
         gl.uniform3fv(this.lightUniforms[idx].ld, light.ld)
         gl.uniform3fv(this.lightUniforms[idx].ls, light.ls)
-        // gl.uniform1f(this.lightUniforms[idx].gloss, light.gloss)
+        gl.uniform1f(this.lightUniforms[idx].attenuation, light.attenuation)
         gl.uniform3fv(this.lightUniforms[idx].position, light.position)
       })
     }
