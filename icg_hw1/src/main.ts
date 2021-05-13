@@ -151,7 +151,7 @@ function tick() {
     update();
     
     // depth maps
-    // drawShadow(shadow, shadow_shader);
+    drawShadow(shadow, shadow_shader);
     shadow.setPosRot();
     shadow.view.setMVP();
     let mat = shadow.getMatrix();
@@ -184,11 +184,10 @@ function draw(
     shaders:{ [name: string]: BasicShader } | BasicShader[] = shader_programs,
     )
 {
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    gl.disable(gl.CULL_FACE);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    // gl.enable(gl.CULL_FACE);
     gl.enable(gl.DEPTH_TEST);
+    gl.disable(gl.CULL_FACE);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     gl.viewport(0, 0, view.viewportWidth, view.viewportHeight);
     
     let world_mat = view.setMVP();
@@ -209,13 +208,13 @@ function drawShadow(
     )
 {
     shadow.setFrameBuffer();
-    let view = shadow.view;
+    var view = shadow.view;
     // gl.enable(gl.CULL_FACE);
     gl.enable(gl.DEPTH_TEST);
-    gl.viewport(0, 0, view.viewportWidth, view.viewportHeight);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.viewport(0, 0, view.viewportWidth, view.viewportHeight);
     
-    let world_mat = view.setMVP();
+    var world_mat = view.setMVP();
     shader.setWorldMatrixUniforms(world_mat);
     shader.setLightUniforms(lights);
     shader.setCamPosUniform(view.position);
@@ -223,11 +222,10 @@ function drawShadow(
         ([, obj]) => {
             // let s = obj.shaderProgram;
             // obj.shaderProgram = shader;
-            obj.draw()
+            obj.draw(shader)
             // obj.shaderProgram = s;
         }
     );
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 }
 
 

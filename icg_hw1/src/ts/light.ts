@@ -46,6 +46,7 @@ class Shadow {
   {
     // this.createDepthBuffer()
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.depthFramebuffer);
+    this.setPosRot()
     // gl.bindTexture(gl.TEXTURE_2D, this.depthTexture);
     // gl.framebufferTexture2D(
     //     gl.FRAMEBUFFER,       // target
@@ -62,11 +63,10 @@ class Shadow {
     //   gl.TEXTURE_2D,         // texture target
     //   this.unusedTexture,         // texture
     //   0);                    // mip level
-    let status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
-    if (status !== gl.FRAMEBUFFER_COMPLETE) {
-      console.log("The created frame buffer is invalid: " + status.toString());
-    }
-    this.setPosRot()
+    // let status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+    // if (status !== gl.FRAMEBUFFER_COMPLETE) {
+    //   console.log("The created frame buffer is invalid: " + status.toString());
+    // }
   }
   
   setPosRot(): void{
@@ -78,7 +78,9 @@ class Shadow {
   getMatrix(): mat4
   {// Assume the MVP is calculated
     let mvp = this.view.getMVP()
-    return mat4.mul(mat4.create(), mvp.pMatrix, mvp.mvMatrix);
+    var mat = mat4.create();
+    mat = mat4.mul(mat, mvp.pMatrix, mvp.mvMatrix);
+    return mat;
   }
 
   createDepthBuffer(): void

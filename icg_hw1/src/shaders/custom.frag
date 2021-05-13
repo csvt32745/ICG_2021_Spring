@@ -34,23 +34,23 @@ void main(void) {
     vec4 shadowmap_color = texture2D(depth_tex, relative_depth_pos.xy);
     float shadow_dist = shadowmap_color.r;
     // gl_FragColor.rgb = vec3(relative_depth_pos.z);
+    // gl_FragColor.rgb = shadowmap_color.rrr;
     // gl_FragColor.a = 1.;
-    gl_FragColor = shadowmap_color;
     
-    return;
+    // return;
     
-    // if(relative_depth_pos.z > shadow_dist + 1e-5){
-    //     gl_FragColor = vec4(0, 0, 0, 1);
-    //     return;
-    // }
+    if(relative_depth_pos.z > shadow_dist){
+        gl_FragColor = vec4(0, 0, 0, 1);
+        return;
+    }
 
     // color
     gl_FragColor = vec4(0, 0, 0, 1);
     vec3 color;
     if(tex_enabled){
-        // color = texture2D(tex, uv).rgb;
-        gl_FragColor.rgb = texture2D(depth_tex, uv).rgb;
-        return;
+        color = texture2D(tex, uv).rgb;
+        // gl_FragColor.rgb = texture2D(depth_tex, uv).rgb;
+        // return;
     }
     else{
         color = fragcolor;
