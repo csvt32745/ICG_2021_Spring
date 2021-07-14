@@ -23,6 +23,7 @@ void main(void) {
     vNormal = ((uinvTModelMatrix * vec4(aNormal, 0.0)).xyz);
     depth_pos = uDepthMatrix * vec4(pos, 1.0);
     gl_Position = uPMatrix * uMVMatrix * vec4(pos, 1.0);
+    // gl_Position = depth_pos;
     // depth_pos = gl_Position;
     // gl_Position = depth_pos;
 }

@@ -19,7 +19,7 @@ class Camera extends Transform {
 
     setMVP () {
       // Setup Projection Matrix
-      mat4.perspective(this.pMatrix, this.FOV, this.viewportWidth / this.viewportHeight, 0.1, 100.0)
+      mat4.perspective(this.pMatrix, this.FOV, this.viewportWidth / this.viewportHeight, 0.5, 100.0)
       // let width = 15;
       // mat4.ortho(this.pMatrix, -width*this.viewportWidth / this.viewportHeight, width*this.viewportWidth / this.viewportHeight, -width, width, 0.1, 300.0)
 

@@ -147,14 +147,18 @@ class BasicShader {
       gl.texImage2D(
         gl.TEXTURE_2D,      // target
         0,                  // mip level
-        gl.DEPTH_COMPONENT, // internal format
+        // gl.DEPTH_COMPONENT, // internal format
+        gl.RGBA, // internal format
         depthTextureSize,   // width
         depthTextureSize,   // height
         0,                  // border
-        gl.DEPTH_COMPONENT, // format
+        // gl.DEPTH_COMPONENT, // format
+        gl.RGBA, // format
         gl.UNSIGNED_INT,    // type
+        // gl.UNSIGNED_BYTE,    // type
         null);              // data
       gl.uniformMatrix4fv(this.depthMatrix, false, depthMatrix);
+      // gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.textures.texture);
       // gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.FLOAT, );
     }
 

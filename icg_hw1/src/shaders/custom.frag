@@ -33,13 +33,14 @@ void main(void) {
     relative_depth_pos = relative_depth_pos*0.5 + 0.5;
     vec4 shadowmap_color = texture2D(depth_tex, relative_depth_pos.xy);
     float shadow_dist = shadowmap_color.r;
+
     // gl_FragColor.rgb = vec3(relative_depth_pos.z);
+    // gl_FragColor.rgb = vec3(relative_depth_pos.xyz);
     // gl_FragColor.rgb = shadowmap_color.rrr;
     // gl_FragColor.a = 1.;
-    
     // return;
     
-    if(relative_depth_pos.z > shadow_dist){
+    if(relative_depth_pos.z > shadow_dist+0.0001){
         gl_FragColor = vec4(0, 0, 0, 1);
         return;
     }

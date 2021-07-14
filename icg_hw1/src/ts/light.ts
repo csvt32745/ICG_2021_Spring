@@ -31,7 +31,7 @@ class Shadow {
   light: PhongLight;
   view: Camera;
   depthTexture: WebGLTexture;
-  depthTextureSize: number = 512;
+  depthTextureSize: number = 2048;
   depthFramebuffer: WebGLFramebuffer;
 
   unusedTexture: WebGLTexture;
@@ -46,6 +46,7 @@ class Shadow {
   {
     // this.createDepthBuffer()
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.depthFramebuffer);
+    // gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     this.setPosRot()
     // gl.bindTexture(gl.TEXTURE_2D, this.depthTexture);
     // gl.framebufferTexture2D(
@@ -97,8 +98,8 @@ class Shadow {
         gl.DEPTH_COMPONENT, // format
         gl.UNSIGNED_INT,    // type
         null);              // data
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
      
